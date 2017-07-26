@@ -4,7 +4,9 @@ title: Home
 
 # Queensland Functional Programming Lab
 
-We should put some kind of summary of the lab here ...
+<div class="subtitle">
+Build software that works
+</div>
 
 ## What we are working on?
 

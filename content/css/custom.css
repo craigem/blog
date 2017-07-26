@@ -2,3 +2,16 @@ code {
     color: #2352C7;
     background-color: #F5F5F5;
 }
+
+#queensland-functional-programming-lab {
+    text-align: center;
+}
+
+div .subtitle {
+    background-color: #f3f3f3;
+    font-size: xx-large;
+    text-align: center;
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 10px;
+}
