@@ -4,15 +4,27 @@ title: Home
 
 # Queensland Functional Programming Lab
 
-We should put some kind of summary of the lab here ...
+<div class="jumbotron">
+  <h1>Build software that works</h1>
+  Elevator pitch goes here
+</div>
 
-## What we are working on?
+<div class="page-header">
+  <h2>Write and deploy faster</h2>
+</div>
 
-... followed by a high level overview of what we're working on ...
+Testing
 
-## Blog posts
+<div class="page-header">
+  <h2>Remove unnecessary dependencies</h2>
+</div>
 
-The most recent blog posts are:
-$partial("templates/post-list.html")$
+Testing
 
-The whole backlog is available from the [archives](./archive).
+<div class="page-header">
+  <h2>Reduce time finding and fixing bugs</h2>
+</div>
+
+Testing
+
+
