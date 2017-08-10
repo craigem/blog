@@ -12,9 +12,9 @@ recognised this and are investing heavily in our data driven future.
 
 However, there are significant problems with the way we currently deal with data. If not addressed,
 these problems and their impact will grow; at best slowing our progress, at worst causing calamity.
-We see the biggest problems with how we currently deal with data being the use of proprietary
-formats, and the lack of robust programming models. As a result, we aim to improve the state of data
-science by using functional programming to produce open source software for use in data science.
+We see the two biggest problems being the use of proprietary formats, and the lack of robust
+programming models. As a result, we aim to improve the state of data science by using functional
+programming to produce and contribute to open source software for use in data science.
 
 If you believe in what we're doing and would like to get involved, [we'd love to hear from
 you](/contact).
