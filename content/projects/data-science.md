@@ -1,6 +1,8 @@
 ---
-title: Data Science
+title: Data science
 ---
+
+# Data science
 
 Data is the foundation of our ability to analyse and understand the world. Given the ongoing
 increase in computing power available to humanity, and the resultant increase in our ability to
