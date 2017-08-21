@@ -3,7 +3,6 @@ title: Basic Integration of Purescript into a Webpack/NG2/TS Project
 date: 2017-08-21
 authors: schalmers
 project: purescript
-project-name: Purescript
 ---
 
 New tools and languages can be wonderful things. But all too often the excitement around these new things is focused around building an entirely new X, or 'I had some spare time so I rewrote Y'. Where we often need them most is in an existing project, sometimes one that is starting to struggle under its own weight or showing its age.
