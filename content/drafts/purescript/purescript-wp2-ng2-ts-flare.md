@@ -135,9 +135,13 @@ For this standalone component that is all you need to do. If you don't have it r
 
 ### Communicating With JavaScript
 
-So far our interactions have been either easily controlled, ``String -> String`` or they have been interative but self-contained, in the case of Flare UI. But a more useful example is having a Flare UI component that handles some state from the Javascript application. 
+So far our interactions have been either a pure function (``String -> String``), or they have been interactive but self-contained, in the case of Flare UI. A more useful example is having a Flare UI component that handles some state from the Javascript application.
 
-First, update our Flare UI component so that it accepts a function to run over the input, then wire up the Javascript side of things. Flare comes with a couple of functions that let us run effectful functions over the output of a Flare UI Component instead of applying the output to the DOM.
+The steps we need to take are:
+- Update our Flare UI component so that it accepts a function to run over the input
+- Update the JavaScript code to pass in a function that will update our ``AppState``
+
+Helpfully, Flare comes with a couple of functions that let us run effectful functions over the output of a Flare UI Component instead of applying the output to the DOM.
 
 To start with, we need [**runFlareWith**](https://pursuit.purescript.org/packages/purescript-flare/3.1.0/docs/Flare#v:runFlareWith).
 
@@ -152,11 +156,11 @@ Normally, you might write such a type signature like this:
 ```haskell
 type InFn eff = String -> Eff ( dom :: DOM | eff) Unit
 ```
-Because you want to indicate in the type of the function that it will cause DOM changes to occur. You're also able to trace back all of the other effects that are in play when this function is called because the type requires that they be passed in through the ``eff`` type variable.
+Because you want to indicate in the type of the function that it may cause DOM changes to occur. You're also able to trace back all of the other effects that are in play when this function is called because the type requires that they be passed in through the ``eff`` type variable.
 
 However any function from Javascript will have no such constraints and we cannot guarantee anything about what it may or may not do. So we assume the worst and declare that this function may perform any possible effect: ``forall eff.``. 
 
-We cannot force Javascript to comply with our types, however we can at least provide some level of confidence within our Purescript code, that we're handling this callback correctly by giving it a type signature that describes the very lack of control we must be cautious of.
+We cannot force Javascript to comply with our types, but we can at least provide some level of confidence within our Purescript code that we're handling this callback correctly, by giving it a type signature that describes the very lack of control we must be cautious of.
 
 Another change is that we are no longer relying on Flare to display this result in the DOM. So we do not need the "output" element ID. We will replace it with our ``InputFn`` and our new ``combineTextEle`` function should look something like:
 ```haskell
@@ -217,4 +221,5 @@ this.localState = {
 }
 ```
 
-If things are going according to plan then you have successfully integrated a well typed Purescript UI component into an existing Javascript Angular2 application.
+If things are going according to plan then you have successfully integrated a well typed Purescript UI component into an existing Javascript Angular2 application. It may not seem like much, but now you can start to replace entire pieces of your DOM altering code with statically typed UI components. More importantly you can start to do this right now, without having to rebuild your entire application!
+
