@@ -2,7 +2,6 @@
 title: Basic Integration of Purescript into a Webpack/NG2/TS Project
 date: 2017-08-21
 authors: schalmers
-project: purescript
 ---
 
 New tools and languages can be wonderful things. But all too often the excitement around these new things is focused around building an entirely new X, or 'I had some spare time so I rewrote Y'. Where we often need them most is in an existing project, sometimes one that is starting to struggle under its own weight or showing its age.
@@ -162,7 +161,7 @@ this.appState.set('value', Basic.doubler(value));
 
 ### Kicking the tyres
 
-If your development server isn't running, you can start it by typing ``npm start`` at the root of the project. 
+If your development server isn't running, you can start it by typing ``$ npm start`` at the root of the project. 
 
 On the 'Home' page of the web-app, you should be able to type something into the 'Local State' text field and click the ``Submit Value`` button. As you type you should see the ``localState`` being updated with the latest value. Typing "Turbo" should take this:
 ```javascript
@@ -187,9 +186,9 @@ this.appState.state = {
 ```
 If you see the duplicated value on the ``appState`` then congratulations, you have successfully integrated your Purescript module with the larger Javascript application.
 
-This was a pure function, simple inputs and outputs with no side-effects. However you can still notice the benefits that this might provide if you have a particularly gnarly piece of business logic. Or you would like to lean on the abstractions available in Purescript.
+This was a pure function, simple inputs and outputs with no side-effects. However you can still notice the benefits that this might provide if you have a particularly gnarly piece of business logic, or you would like to lean on the abstractions available in Purescript.
 
-Perhaps more importantly, this technique and what will be covered in the next article provide the basis for gradually subsuming the Javascript in a project with Purescript. Without requiring an 'all or nothing' type approach, components and functionality can be replaced piece by piece.
+Perhaps more importantly, this technique and what will be covered in the next article provide the basis for gradually subsuming the Javascript in a project with Purescript. Components and functionality can be replaced piece by piece without requiring an 'all or nothing' type approach.
 
 ### Where to from here?
 

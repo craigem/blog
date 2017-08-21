@@ -2,7 +2,6 @@
 title: Integrating Purescript Flare UI Component into Webpack/NG2/TS Project
 date: 2017-08-21
 authors: schalmers
-project: purescript
 ---
 
 Picking up from where we left off, we should have a [angular-starter](https://github.com/AngularClass/angular-starter) project with some integrated Purescript code. To improve on this, we're going to now create a small UI component using Purescript and display it in the Javascript application. This UI will take some input, mess with it a bit, and display the result. 
