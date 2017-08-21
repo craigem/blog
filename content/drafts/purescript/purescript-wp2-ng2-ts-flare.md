@@ -16,7 +16,7 @@ After that we'll take some state from the Javascript application and pass it to 
 - A basic, or working knowledge of Purescript, and a desire for more
 - A functioning install of Purescript 0.11.5, ``purs`` available on the $PATH
 - A functioning install of NodeJS with ``bower`` and ``npm`` on the $PATH
-- Have completed part one of the tutorial for [Integrating Purescript to a Webpack Project](purescript-wp2-ng2-ts)
+- Have worked through the tutorial for [Integrating Purescript to a Webpack Project](purescript-wp2-ng2-ts)
 
 ### Adding a bit of Flare
 
