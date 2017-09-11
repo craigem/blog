@@ -2,6 +2,10 @@
 title: Home
 ---
 
+
+<img alt="Data61 logo" src="images/data61-logo_213x137.png" id="data61-logo" cla
+ss="pull-right" />
+
 # Queensland Functional Programming Lab
 
 <div class="jumbotron">
