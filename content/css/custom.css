@@ -47,10 +47,8 @@ small.no-dash-small-quote::before {
   }
 }
 @media (min-width: 769px) {
-  .data61-logo-fp {
-    float: right;
-  }
   #advance-qld-logo {
     margin-top: 2.5em;
+    float: right;
   }
 }

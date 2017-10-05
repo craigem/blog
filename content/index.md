@@ -5,10 +5,10 @@ title: Home
 <div class="container-fluid">
   <div class="row">
   <div class="col-xs-12 col-md-6">
-  <img alt="Advance Queensland" src="images/advance-queensland.jpg" id="advance-qld-logo" width="344.4px" height="67.2px"/>
+  <img class="data61-logo-fp" alt="Data61 logo" src="images/data61-logo_213x137.png" id="data61-logo"/>
   </div>
   <div class="col-xs-12 col-md-6">
-  <img class="data61-logo-fp" alt="Data61 logo" src="images/data61-logo_213x137.png" id="data61-logo"/>
+  <img alt="Advance Queensland" src="images/advance-queensland.jpg" id="advance-qld-logo" width="344.4px" height="67.2px"/>
   </div>
   </div>
 </div>
