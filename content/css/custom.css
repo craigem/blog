@@ -32,3 +32,21 @@ h1, h2, h3, h4, h5, h6 {
   color: #1D2021;
   font-family: UnitRounded, sans-serif;
 }
+
+@media (max-width: 768px) {
+  #advance-qld-logo {
+      transform: scale(0.45);
+      transform-origin: top left;
+  }
+  .advance-qld-logo-fp {
+    height: 4em;
+  }
+  .data61-logo-fp {
+    float: none;
+  }
+}
+@media (min-width: 769px) {
+  .data61-logo-fp {
+    float: right;
+  }
+}
