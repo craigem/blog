@@ -4,8 +4,8 @@ title: Home
 
 <div class="container-fluid">
   <div class="row">
-  <div class="col-xs-12 col-md-6 advance-qld-logo-fp">
-  <img alt="Advance Queensland" src="images/advance-queensland.jpg" id="advance-qld-logo" width="574.5" height="112.5px"/>
+  <div class="col-xs-12 col-md-6">
+  <img alt="Advance Queensland" src="images/advance-queensland.jpg" id="advance-qld-logo" width="344.4px" height="67.2px"/>
   </div>
   <div class="col-xs-12 col-md-6">
   <img class="data61-logo-fp" alt="Data61 logo" src="images/data61-logo_213x137.png" id="data61-logo"/>
@@ -13,16 +13,7 @@ title: Home
   </div>
 </div>
 
-<!-- <div class="landing-page advance-qld-logo"> -->
-<!--   <img alt="Advance Queensland" src="images/advance-queensland.jpg" id="advance-qld-logo"/> -->
-<!-- </div> -->
-<!-- <div class="text-right"> -->
-<!--   <img class="front-page-logo" alt="Data61 logo" src="images/data61-logo_213x137.png" id="data61-logo"/> -->
-<!-- </div> -->
-
-<div class="text-left">
 # Queensland Functional Programming Lab
-</div> 
 
 <div class="jumbotron">
   <h1>Write software that works</h1>

@@ -35,11 +35,8 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   #advance-qld-logo {
-      transform: scale(0.45);
+      transform: scale(0.75);
       transform-origin: top left;
-  }
-  .advance-qld-logo-fp {
-    height: 4em;
   }
   .data61-logo-fp {
     float: none;
@@ -48,5 +45,8 @@ h1, h2, h3, h4, h5, h6 {
 @media (min-width: 769px) {
   .data61-logo-fp {
     float: right;
+  }
+  #advance-qld-logo {
+    margin-top: 2.5em;
   }
 }
