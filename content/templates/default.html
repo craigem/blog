@@ -3,11 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"">
     <title>Queensland FP Lab - $title$</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,300italic,300,600,600italic,700,700italic,800,800italic' rel='stylesheet' type='text/css'>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" href="/css/materialize.min.css">
+    <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
+    <!-- <link rel="stylesheet" href="/css/materialize.min.css"> -->
+        <link rel="stylesheet" href="/css/bootstrap.min.css" />
         <link rel="stylesheet" href="/css/font-awesome.min.css" />
         <link rel="stylesheet" href="/css/custom.css">
         <link rel="stylesheet" href="/css/syntax.css">
@@ -29,71 +30,86 @@
         </script>
     </head>
     <body>
-        <header>
-            <nav class="data61-green">
-                <div class="nav-wrapper">
-                    <div class="row">
-                        <div class="col s12">
-                            <a class="brand-logo" href="/">
-                                <img class="nav-logo" alt="Data61 logo" src="images/DATA61_CSIRO_OnGreen_RGB_lr.jpg"/>
-                            </a>
 
-                            <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
-                            <ul class="right hide-on-med-and-down">
-                                <li role="presentation" $if(home-active)$ class="active" $endif$ ><a href="/">Home</a></li>
-                                <li role="presentation" $if(location-active)$ class="active" $endif$ ><a href="/location">Location</a></li>
-                                <li role="presentation" $if(people-active)$ class="active" $endif$ ><a href="/people">People</a></li>
-                                <li role="presentation" $if(projects-active)$ class="active" $endif$ ><a href="/projects">Projects</a></li>
-                                <li role="presentation" $if(talks-active)$ class="active" $endif$ ><a href="/talks">Talks</a></li>
-                                <li role="presentation" $if(contact-active)$ class="active" $endif$ ><a href="/contact">Contact</a></li>
-                                <li role="presentation" $if(archive-active)$ class="active" $endif$ ><a href="/archive">Archive</a></li>
-                            </ul>
-                            <ul id="nav-mobile" class="side-nav">
-                                <li class="data61-green center">
-                                    <img class="side-nav-logo" alt="Data61 logo" src="images/DATA61_CSIRO_OnGreen_RGB_lr.jpg"/>
-                                    <h2 class="white-text">QFPL</h2>
-                                </li>
-                                <li role="presentation" $if(home-active)$ class="active" $endif$ ><a href="/">Home</a></li>
-                                <li role="presentation" $if(location-active)$ class="active" $endif$ ><a href="/location">Location</a></li>
-                                <li role="presentation" $if(people-active)$ class="active" $endif$ ><a href="/people">People</a></li>
-                                <li role="presentation" $if(projects-active)$ class="active" $endif$ ><a href="/projects">Projects</a></li>
-                                <li role="presentation" $if(talks-active)$ class="active" $endif$ ><a href="/talks">Talks</a></li>
-                                <li role="presentation" $if(contact-active)$ class="active" $endif$ ><a href="/contact">Contact</a></li>
-                                <li role="presentation" $if(archive-active)$ class="active" $endif$ ><a href="/archive">Archive</a></li>
-                            </ul>
-                        </span>
-                    </div>
+        <header>
+            <nav class="navbar navbar-expand-lg data61-green">
+              <a class="navbar-brand text-white" href="/">
+                <img height="75" alt="Data61 logo" src="images/DATA61_CSIRO_OnGreen_RGB_lr.jpg"/>
+              </a>
+
+              <button class="navbar-toggler"
+                      type="button"
+                      data-toggle="collapse"
+                      data-target="#navbarNav"
+                      aria-controls="navbarNav"
+                      aria-expanded="false"
+                      aria-label="Toggle navigation">
+
+                <i class="fa fa-lg fa-fw fa-bars text-white"></i>
+              </button>
+
+              <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                  <ul class="navbar-nav">
+                    <li $if(home-active)$ class="nav-item active" $else$ class="nav-item" $endif$>
+                      <a class="nav-link text-white" href="/">Home</a>
+                    </li>
+                    <li $if(location-active)$ class="nav-item active" $else$ class="nav-item" $endif$ >
+                      <a class="nav-link text-white" href="/location">Location</a>
+                    </li>
+                    <li $if(people-active)$ class="nav-item active" $else$ class="nav-item" $endif$ >
+                      <a class="nav-link text-white" href="/people">People</a>
+                    </li>
+                    <li $if(projects-active)$ class="nav-item active" $else$ class="nav-item" $endif$ >
+                      <a class="nav-link text-white" href="/projects">Projects</a>
+                    </li>
+                    <li $if(talks-active)$ class="nav-item active" $else$ class="nav-item" $endif$ >
+                      <a class="nav-link text-white" href="/talks">Talks</a>
+                    </li>
+                    <li $if(contact-active)$ class="nav-item active" $else$ class="nav-item" $endif$ >
+                      <a class="nav-link text-white" href="/contact">Contact</a>
+                    </li>
+                    <li $if(archive-active)$ class="nav-item active" $else$ class="nav-item" $endif$ >
+                      <a class="nav-link text-white" href="/archive">Archive</a>
+                    </li>
+                  </ul>
                 </div>
             </nav>
         </header>
+
         <main>
-            <div class="container">
+            <div class="container-fluid">
                 $body$
             </div>
         </main>
 
-        <footer class="page-footer data61-green lighten-1">
+        <footer class="page-footer data61-green">
             <div class="container">
-                <div class="row">
-                    <div class="col s6">
-                        <a href="https://github.com/qfpl"><i class="white-text fa fa-github fa-2x"></i></a>
-                        <a href="https://twitter.com/queenslandfplab"><i class="white-text fa fa-twitter fa-2x"></i></a>
-                        <a href="mailto:contact@qfpl.io"><i class="white-text fa fa-envelope-o fa-2x"></i></a>
-                    </div>
-                    <div class="col s6">
-                        <a class="right" rel="license" href="http://creativecommons.org/licenses/by/4.0/">
-                            <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" />
-                        </a>
-                    </div>
+              <div class="row justify-content-centre">
+                <div class="col">
+                  <a href="https://github.com/qfpl"><i class="text-white fa fa-github fa-2x"></i></a>
+                  <a href="https://twitter.com/queenslandfplab"><i class="text-white fa fa-twitter fa-2x"></i></a>
+                  <a href="mailto:contact@qfpl.io"><i class="text-white fa fa-envelope-o fa-2x"></i></a>
                 </div>
+                <div class="col">
+                  <a class="float-right" rel="license" href="http://creativecommons.org/licenses/by/4.0/">
+                    <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" />
+                  </a>
+                </div>
+              </div>
             </div>
-            <div class="footer-copyright"></div>
         </footer>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-        <script src="/js/materialize.min.js"></script>
-        <script src="/js/mobile-nav-init.js"></script>
-        <script src="/js/location-carousel-init.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+                integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+                crossorigin="anonymous">
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+                crossorigin="anonymous">
+        </script>
+
+        <script src="/js/bootstrap.min.js"></script>
+
         $if(extra-js)$
         $for(extra-js)$
         <script src="$body$" defer></script>

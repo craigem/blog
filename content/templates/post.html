@@ -1,24 +1,33 @@
 <div class="container">
-    <h3>$title$</h3>
-    <small>Posted on $date$</small>
-    
-    <div class="revert-ul inner-h2-adjust">
-        $body$
+  <div class="row">
+    <div class="col my-2">
+      <h2>$title$</h2>
+      <small>Posted on $date$</small>
     </div>
-    
-    $if(project)$
-    <div class="section">
-        <div class="inner-h2-adjust">$project$</div>
+  </div>
+
+  <div class="row">
+    <div class="col my-2">
+      $body$
     </div>
-    $endif$
-    
-    $if(authors)$
-    <div class="divider"></div>
-    <div class="section">
-        $for(authors)$
-        <div class="inner-h2-adjust">$body$</div>
-        $endfor$
+  </div>
+
+  $if(project)$
+  <div class="row">
+    <div class="col my-2">
+      $project$
     </div>
-    $endif$
-    
+  </div>
+  $endif$
+
+  $if(authors)$
+  <div class="row">
+    <div class="col my-2">
+      $for(authors)$
+      $body$
+      $endfor$
+    </div>
+  </div>
+  $endif$
+
 </div>

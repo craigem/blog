@@ -56,18 +56,18 @@ data PandocMathCompilerFunctions =
   , pmcfRenderPandoc :: Item String -> Compiler (Item String)
   }
 
-bumpHeaderLevels :: Pandoc -> Pandoc
-bumpHeaderLevels =
-  let
-    sectionDiv e =
-      Div (mempty, ["section"], mempty) [e]
+-- bumpHeaderLevels :: Pandoc -> Pandoc
+-- bumpHeaderLevels =
+--   let
+--     sectionDiv e =
+--       Div (mempty, ["section"], mempty) [e]
 
-    f (Header l a i)
-      | l == 2 || l == 1 = sectionDiv $ Header 3 a i
-      | otherwise        = sectionDiv $ Header (l + 1) a i
-    f b = b
-  in
-    walk f
+--     f (Header l a i)
+--       | l == 2 || l == 1 = sectionDiv $ Header 3 a i
+--       | otherwise        = sectionDiv $ Header (l + 1) a i
+--     f b = b
+--   in
+--     walk f
 
 setupPandocMathCompiler :: PandocMathCompilerConfig -> IO PandocMathCompilerFunctions
 setupPandocMathCompiler pmcc = do
@@ -83,13 +83,13 @@ setupPandocMathCompiler pmcc = do
       pandocCompilerWithTransformM
         defaultHakyllReaderOptions
         writerOptions
-        (transform . bumpHeaderLevels)
+        transform
 
     renderFn =
       renderPandocWithTransformM
         defaultHakyllReaderOptions
         writerOptions
-        (transform . bumpHeaderLevels)
+        transform
 
   return $
     PandocMathCompilerFunctions

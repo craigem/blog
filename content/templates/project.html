@@ -1,29 +1,32 @@
 <div class="container">
-  <div class="section">
-    <h3>$title$</h3>
 
-    <div class="divider"></div>
+  <div class="row">
+    <div class="col my-2">
+      <h2>$title$</h2>
+    </div>
+  </div>
 
-    <div class="inner-h2-adjust revert-ul">
+  <div class="row">
+    <div class="col my-2">
       $body$
     </div>
-
   </div>
 
   $if(talks)$
-  <div class="divider"></div>
-  <div class="section">
-    <h4>Talks</h4>
-    $partial("templates/talk-list.html")$
+  <div class="row">
+    <div class="col my-2">
+      <h3>Talks</h3>
+      $partial("templates/talk-list.html")$
+    </div>
   </div>
   $endif$
 
-
   $if(posts)$
-  <div class="divider"></div>
-  <div class="section">
-    <h4>Blog posts</h4>
-    $partial("templates/post-list.html")$
+  <div class="row">
+    <div class="col my-2">
+      <h3>Blog posts</h3>
+      $partial("templates/post-list.html")$
+    </div>
   </div>
   $endif$
 

@@ -1,13 +1,14 @@
-<div class="col s12 m6">
-  <div class="card">
-    <div class="card-content">
+  <div class="card my-2 data61-border">
+    <div class="card-body">
 
-      <span class="card-title black-text">
-        $if(slides-url)$
-          <a class="black-text" href="$slides-url$">$title$</a>
-        $else$
-          $title$
-        $endif$
+      <span class="card-title">
+        <h4>
+          $if(slides-url)$
+            <a class="text-dark" href="$slides-url$">$title$</a>
+          $else$
+            $title$
+          $endif$
+        </h4>
       </span>
 
       <p>
@@ -16,64 +17,61 @@
         </a>
 
         $if(venue)$
-
+        <span class="float-right">
           $if(venue-link)$
-            <a class="right" href="$venue-link$">$venue$</a>
+            <a href="$venue-link$">$venue$</a>
           $else$
-            <span class="right">$venue$</span>
+            $venue$
           $endif$
-      $endif$        
+        </span>
+      $endif$
       </p>
 
-      <p class="right">$date$</p>
-      
+      <p class="text-right m-0">$date$</p>
+
     </div>
-
-    <div class="card-action">
-
-      $if(slides-url)$
-        <a href="$slides-url$">
+      <div class="card-footer">
+        $if(slides-url)$
+          <a href="$slides-url$">
           Slides
           <span class="fa-stack fa-1x">
             <i class="fa fa-circle fa-stack-2x"></i>
             <i class="fa fa-table fa-stack-1x fa-inverse"></i>
-          </span>        
+          </span>
         </a>
-      $endif$
+        $endif$
 
-      $if(video-url)$
+        $if(video-url)$
         <a href="$video-url$">
           Video
           <span class="fa-stack fa-1x">
             <i class="fa fa-circle fa-stack-2x"></i>
             <i class="fa fa-film fa-stack-1x fa-inverse"></i>
-          </span>        
+          </span>
         </a>
-      $endif$
+        $endif$
 
-      $if(code-url)$
+        $if(code-url)$
         <a href="$code-url$">
           Code
           <span class="fa-stack fa-1x">
             <i class="fa fa-circle fa-stack-2x"></i>
             <i class="fa fa-code fa-stack-1x fa-inverse"></i>
-          </span>        
+          </span>
         </a>
-      $endif$
-    
-      $if(project-name)$
-        <span class="right">
-        $if(project)$
-          <a href="/project/$project$">$project-name$</a>
-        $else$
-          $project-name$
         $endif$
-        </span>
-      $endif$
-  
-    </div>
+
+        $if(project-name)$
+          <span class="float-right align-middle">
+          $if(project)$
+            <a href="/project/$project$">$project-name$</a>
+          $else$
+            $project-name$
+          $endif$
+          </span>
+        $endif$
+      </div>
   </div>
-</div>
 <!-- <div>
   $if(talks-page)$
     $if(slides-url)$
