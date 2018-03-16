@@ -6,27 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"">
     <title>Queensland FP Lab - $title$</title>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,300italic,300,600,600italic,700,700italic,800,800italic' rel='stylesheet' type='text/css'>
-    <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
-    <!-- <link rel="stylesheet" href="/css/materialize.min.css"> -->
         <link rel="stylesheet" href="/css/bootstrap.min.css" />
         <link rel="stylesheet" href="/css/font-awesome.min.css" />
         <link rel="stylesheet" href="/css/custom.css">
         <link rel="stylesheet" href="/css/syntax.css">
         $if(extra-css)$
-        $for(extra-css)$
-        <link rel="stylesheet" href="$body$">
-        $endfor$
+          $for(extra-css)$
+            <link rel="stylesheet" href="$body$">
+          $endfor$
         $endif$
         <link rel="alternate" type="application/atom+xml" title="Queensland Functional Programming Lab Blog" href="/atom.xml">
         <link rel="alternate" type="application/rss+xml" title="Queensland Functional Programming Lab Blog" href="/rss.xml">
         <!-- Global Site Tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-106321204-1"></script>
         <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments)};
-            gtag('js', new Date());
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments)};
+          gtag('js', new Date());
 
-            gtag('config', 'UA-106321204-1');
+          gtag('config', 'UA-106321204-1');
         </script>
     </head>
     <body>
@@ -80,9 +78,21 @@
             <div class="container-fluid">
                 $body$
             </div>
-        </main>
+            <div class="collapse navbar-collapse navbar-right" id="navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li role="presentation" $if(home-active)$ class="active" $endif$ ><a href="/">Home</a></li>
+                    <li role="presentation" $if(location-active)$ class="active" $endif$ ><a href="/location">Location</a></li>
+                    <li role="presentation" $if(people-active)$ class="active" $endif$ ><a href="/people">People</a></li>
+                    <li role="presentation" $if(projects-active)$ class="active" $endif$ ><a href="/projects">Projects</a></li>
+                    <li role="presentation" $if(talks-active)$ class="active" $endif$ ><a href="/talks">Talks</a></li>
+                    <li role="presentation" $if(contact-active)$ class="active" $endif$ ><a href="/contact">Contact</a></li>
+                    <li role="presentation" $if(archive-active)$ class="active" $endif$ ><a href="/archive">Archive</a></li>
+                </ul>
+            </div>
+        </div>
+        </nav>
 
-        <footer class="page-footer data61-green">
+        <footer class="page-footer data61-green fixed-bottom">
             <div class="container">
               <div class="row justify-content-centre">
                 <div class="col">
@@ -111,9 +121,9 @@
         <script src="/js/bootstrap.min.js"></script>
 
         $if(extra-js)$
-        $for(extra-js)$
-        <script src="$body$" defer></script>
-        $endfor$
+          $for(extra-js)$
+            <script src="$body$" defer></script>
+          $endfor$
         $endif$
     </body>
-    </html>
+</html>

@@ -52,32 +52,25 @@ main {
   font-family: UnitRounded;
   src: url("https://www.csiro.au/themes/default/font/UnitRoundedWeb-Black.woff") format("woff");
   font-weight: 900;
-  font-style: normal;
-}
+  font-style: normal; }
 @font-face {
   font-family: UnitRounded;
   src: url("https://www.csiro.au/themes/default/font/UnitRoundedWeb-Bold.woff") format("woff");
   font-weight: bold;
-  font-style: normal;
-}
+  font-style: normal; }
 @font-face {
   font-family: UnitRounded;
   src: url("https://www.csiro.au/themes/default/font/UnitRoundedWeb-Medium.woff") format("woff");
   font-weight: 500;
-  font-style: normal;
-}
+  font-style: normal; }
 
 body {
   font-family: "Open sans", sans-serif;
 }
 
-header nav {
-  min-height: 100px;
-}
-
 a {
-  color: #2FB787;
-  font-family: UnitRounded, sans-serif;
+    color: #2FB787;
+    font-family: UnitRounded, sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6 {

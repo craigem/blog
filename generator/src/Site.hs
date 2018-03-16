@@ -14,6 +14,9 @@ main :: IO ()
 main = do
   -- TODO possibly load config from a file?
   pandocMathCompilerFns <- setupPandocMathCompiler $ PandocMathCompilerConfig 1000 ["prftree"]
+  let
+    pandocMathCompiler = pmcfCompiler pandocMathCompilerFns
+    renderPandocMath = pmcfRenderPandoc pandocMathCompilerFns
 
   hakyll $ do
     match "images/**" $ do
@@ -41,7 +44,7 @@ main = do
         compile $ do
           let locationCtx =
                 constField "location-active" "" `mappend` defaultContext
-        --   pandocMathCompiler
+
           getResourceBody
             >>= loadAndApplyTemplate "templates/default.html" locationCtx
             >>= relativizeUrls
@@ -66,9 +69,9 @@ main = do
     postRules pandocMathCompilerFns
 
     match "index.html" $ do
-      route $ setExtension "html"
-      compile $ do
-            posts <- fmap (take 4) . recentFirst =<< loadAll "posts/**"
+        route $ setExtension "html"
+        compile $ do
+            posts <- fmap (take 5) . recentFirst =<< loadAll "posts/**"
             let indexCtx =
                     constField "home-active" ""              `mappend`
                     listField "posts" postCtx (return posts) `mappend`
@@ -77,6 +80,7 @@ main = do
 
             getResourceBody
                 >>= applyAsTemplate indexCtx
+                -- >>= renderPandocMath
                 >>= loadAndApplyTemplate "templates/default.html" indexCtx
                 >>= relativizeUrls
                 >>= removeIndexHtml

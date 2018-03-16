@@ -8,7 +8,6 @@ import qualified Data.Set                  as S
 import           Image.LaTeX.Render
 
 import           Text.Pandoc
-import           Text.Pandoc.Walk          (walk)
 
 import           Image.LaTeX.Render.Pandoc
 
@@ -56,19 +55,6 @@ data PandocMathCompilerFunctions =
   , pmcfRenderPandoc :: Item String -> Compiler (Item String)
   }
 
--- bumpHeaderLevels :: Pandoc -> Pandoc
--- bumpHeaderLevels =
---   let
---     sectionDiv e =
---       Div (mempty, ["section"], mempty) [e]
-
---     f (Header l a i)
---       | l == 2 || l == 1 = sectionDiv $ Header 3 a i
---       | otherwise        = sectionDiv $ Header (l + 1) a i
---     f b = b
---   in
---     walk f
-
 setupPandocMathCompiler :: PandocMathCompilerConfig -> IO PandocMathCompilerFunctions
 setupPandocMathCompiler pmcc = do
   renderFormulae <- initFormulaCompilerDataURI (pmccCacheSize pmcc) defaultEnv
@@ -76,7 +62,8 @@ setupPandocMathCompiler pmcc = do
     transform =
       renderFormulae .
       pandocFormulaOptionsWithPkgs .
-      pmccPackages $ pmcc
+      pmccPackages $
+      pmcc
 
     -- is this the same as getResourceBody >>= renderFn
     compiler =
