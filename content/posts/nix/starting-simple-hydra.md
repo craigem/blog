@@ -365,7 +365,9 @@ information then `nixops` will return this error:
     error: state file contains multiple deployments, so you should specify which one to use using ‘-d’, or set the environment variable NIXOPS_DEPLOYMENT
 
 You can set the environment variable `NIXOPS_DEPLOYMENT` to `simple_hydra` if you don't want to
-include the `-d simple_hydra` information every time.
+include the `-d simple_hydra` information every time. The `--force-reboot` is required to ensure
+everything ticks over as required, also there are some `nixops` errors that can be avoided or
+resolved by simply power cycling the machine.
 
     $ nixops deploy -d simple_hydra --force-reboot
 
