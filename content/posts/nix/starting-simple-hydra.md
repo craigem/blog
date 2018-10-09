@@ -62,7 +62,7 @@ We create a `Nix` `attrset` that contains a function that defines our machine, t
 attached to a name that will be used as the `<HOSTNAME>` of the machine within `NixOps`. We use the
 name `my-hydra` here, and we'll need to use that name again when we write our machine configuration.
 
-    # This is the start of the nix file for the virtual machine
+    # START simple_hydra_vbox.nix
     {
       my-hydra =
         { config, pkgs, ... }: {
@@ -108,7 +108,7 @@ In this example we're just going to copy across an RSA public key from a pair. T
           };
         };
     }
-    # This is the end of the nix file for the virtual machine
+    # END: simple_hydra_vbox.nix
 
 We put all of the above in a file named `simple_hydra_vbox.nix`, this will form part of the input
 for our `nixops` command later on. This is the machine, but that isn't much good without a
@@ -127,7 +127,7 @@ Note that the name we assign matches the virualisation configuration. This must 
 there will be an error from `NixOps`. This attribute is also used as the machine hostname, so any
 where you see `<HOSTNAME>` in the configuration, replace that with this name.
 
-    # This is the start of the nix file for the hydra instance
+    # START: simple_hydra.nix
     {
       my-hydra = 
         { config, pkgs, ...}: {
@@ -310,7 +310,7 @@ that requires features that are not supported on a given build machine then it w
         ];
       };
     }
-    # This is the end of the nix file for the hydra instance
+    # END: simple_hydra.nix
 
 Place all of that configuration in a file called `simple_hydra.nix` and we're ready to start powering up.
 
