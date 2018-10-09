@@ -5,22 +5,44 @@ authors: schalmers
 project: infra
 ---
 
-### Intro / Goal
+So you've started using [`Nix`](https://nixos.org/nix) for your projects. The reproducible builds
+and dependency management are predictable and declarative. For the first time in a long time the
+ground at your feet feels firm, you're no longer treading quicksand. You size up your nemesis, the
+Continuous Integration server, long has it defied your attempts to build as you do... No longer.
 
-Hydra is a bit of a monster and there isn't much documentation on how to start, this post aims to
-fix at least a bit of the latter. I'm going to walk you through setting up a local Hydra instance on
-a virtual machine. This will be a stand alone Hydra instance, so no build slaves.
+This post is going to be a guide into setting up a small local instance of the `Nix` powered CI
+system known as [Hydra](https://nixos.org/hydra/):
 
-### Assumptions / Requirements
+<div class="card mb-2"><div class="card-body"><p><i class="fa fa-quote-left fa-fw fa-lg"></i>
+Hydra is a Nix-based continuous build system, released under the terms of the GNU GPLv3 or (at your
+option) any later version. It continuously checks out sources of software projects from version
+management systems to build, test and release them. The build tasks are described using Nix
+expressions. This allows a Hydra build task to specify all the dependencies needed to build or test
+a project. It supports a number of operating systems, such as various GNU/Linux flavours, Mac OS X,
+and Windows.
+<i class="fa fa-quote-right fa-fw fa-lg"></i></p><p class="mb-0">
+--- [Hydra Homepage](https://nixos.org/hydra/)
+</p></div></div>
 
-This tutorial was tested on a machine running `NixOS`, it should work on any machine that has
-`Nix`, `NixPkgs`, and `NixOps`. I assume a level of `Nix` knowledge whereby you are comfortable
-writing your own `Nix` expressions and debugging failures. This is still a bit of a bleeding edge
-part of the `Nix` ecosystem so things don't always go according to plan.
+Hydra is a very powerful system, but like most powerful systems it can be difficult to know where or
+how to start. This post aims to walk you through setting up a local Hydra instance on a virtual
+machine. This will be a stand-alone Hydra instance, only a single machine without build slaves.
+
+'Why did it need to have eight heads?', you ponder briefly before deciding you'd rather not know...
+
+### Requirements
+
+This tutorial was tested on a machine running `NixOS`, it should work on any machine that has `Nix`,
+`NixPkgs`, and `NixOps`. You should be comfortable writing your own `Nix` expressions and debugging
+failures. This is still a bit of a bleeding edge part of the `Nix` ecosystem so things don't always
+go according to plan.
 
 You will need `nixops` installed.
+```
+$ nix-env -i nixops
+```
 
-### Simple NixOps
+### NixOps
 
 To manage the running of our Hydra machine, we're going to leverage `NixOps` to create, start, run,
 and update our virtual machine. This lets us have a declarative defintion of our build machine, as
@@ -28,31 +50,32 @@ well as a consistent interface for managing the machine(s).
 
 We're going to create two Nix expressions:
 
-1.  The virtual machine environment.
-2.  The configuration of the Hydra machine.
+1.  The virtual machine environment: `simple_hydra_vbox.nix`
+2.  The configuration of the Hydra machine: `simple_hydra.nix`
 
 ### The virtual machine
 
 We're going to create the definition for our Hydra machine. This will be a 'headless' VirtualBox
-machine, with some settings to keep the overall size of the machine down and lock down access.
+machine, with some settings to keep the overall size of the machine down and control access.
 
 We create a `Nix` `attrset` that contains a function that defines our machine, this function is
 attached to a name that will be used as the `<HOSTNAME>` of the machine within `NixOps`. We use the
 name `my-hydra` here, and we'll need to use that name again when we write our machine configuration.
 
+    # This is the start of the nix file for the virtual machine
     {
       my-hydra =
         { config, pkgs, ... }: {
 
-`NixOps` lets you choose your deployment environment, this example uses VirtualBox as we're creating
-a trivial machine. The [NixOps Manual](https://nixos.org/nixops/manual/) has much more information about supported target environments
-and their respective options and requirements.
+`NixOps` lets you choose your deployment environment, we're going to use VirtualBox. `NixOps`
+supports quite a few different environemnts. Check out the [NixOps Manual](https://nixos.org/nixops/manual/) 
+for more information about supported target environments and their respective options and requirements.
 
     deployment.targetEnv = "virtualbox"; # for libvrtd/QEMU use "libvrtd"
 
 Provide some settings for our VirtualBox machine. The machine will need a fair chunk of memory, as
-evaluating the `nixpkgs` tree to build the dependencies can be expensive. And as with any CI system,
-you need to make sure your target has sufficient resources to actually run the required builds.
+evaluating the `nixpkgs` tree to build the dependencies can be expensive. As with any CI system, you
+need to make sure your target has sufficient resources to actually run the required builds.
 
 Our machine doesn't require a GUI so we enable `headless` mode. Note that these are `virtualbox`
 specific settings, each target will have their own collection of options, check the manual for more
@@ -85,6 +108,7 @@ In this example we're just going to copy across an RSA public key from a pair. T
           };
         };
     }
+    # This is the end of the nix file for the virtual machine
 
 We put all of the above in a file named `simple_hydra_vbox.nix`, this will form part of the input
 for our `nixops` command later on. This is the machine, but that isn't much good without a
@@ -103,6 +127,7 @@ Note that the name we assign matches the virualisation configuration. This must 
 there will be an error from `NixOps`. This attribute is also used as the machine hostname, so any
 where you see `<HOSTNAME>` in the configuration, replace that with this name.
 
+    # This is the start of the nix file for the hydra instance
     {
       my-hydra = 
         { config, pkgs, ...}: {
@@ -133,10 +158,9 @@ Hydra won't be able to access the database!
     };
 
 
-- TODO Would need to add postfix port to this so email works??
-- TODO Only required when running in a local virtual machine??
 This next setting is to tell `NixOS` to open the TCP port we're going to use for accessing the web
-interface for Hydra.
+interface for Hydra. We don't need to add the `postfix` or `ssh` ports in this instance because the
+`postfix` and `virtualisation` configuration will add them on our behalf.
 
 ```
     networking.firewall.allowedTCPPorts = [ config.services.hydra.port ];
@@ -157,13 +181,16 @@ address of emails from this Hydra system.
 
 The `useSubstitutes` setting is a bit more complicated&#x2026; It's best to refer to the manual for this one:
 
-> Whether to use binary caches for downloading store paths. Note that binary substitutions trigger (a
-> potentially large number of) additional HTTP requests that slow down the queue monitor thread
-> significantly. Also, this Hydra instance will serve those downloaded store paths to its users with
-> its own signature attached as if it had built them itself, so don't enable this feature unless your
-> active binary caches are absolute trustworthy.
-> 
-> &#x2013; From <https://nixos.org/nixos/options.html#services.hydra.usesubstitutes>
+<div class="card mb-2"><div class="card-body"><p>
+<i class="fa fa-quote-left fa-fw fa-lg"></i>
+Whether to use binary caches for downloading store paths. Note that binary substitutions trigger (a
+potentially large number of) additional HTTP requests that slow down the queue monitor thread
+significantly. Also, this Hydra instance will serve those downloaded store paths to its users with
+its own signature attached as if it had built them itself, so don't enable this feature unless your
+active binary caches are absolute trustworthy.
+<i class="fa fa-quote-right fa-fw fa-lg"></i></p>
+<p class="mb-0">--- From <https://nixos.org/nixos/options.html#services.hydra.usesubstitutes></p>
+</div></div>
 
 With this enabled you will reap the benefits of cached build dependencies and spare precious cycles
 by not constantly rebuilding things that don't need to be. The trade-off is a high number of HTTP
@@ -251,10 +278,12 @@ store, replacing them with hard links to a single copy.
 
     nix.gc = {
       automatic = true;
-      dates = "15 3 * * *";
+      dates = "15 3 * * *"; # [1]
     };
     
     nix.autoOptimiseStore = true;
+
+\[1\]: This is a [CRON](https://crontab.guru/#15_3_*_*_*) schedule. To find out more you can read the [`crontab` manual](http://man7.org/linux/man-pages/man5/crontab.5.html) or the [Wikipedia page](https://en.wikipedia.org/wiki/Cron).
 
 This tells `NixOS` which users are allowed to interact with the `nix` store in a more privileged
 fashion, such as adding binary caches.
@@ -263,8 +292,8 @@ fashion, such as adding binary caches.
 
 Finally we setup the build machine so that Hydra has a machine to orchestrate for the builds. In
 this example we're building locally, so we set our `hostName` to "localhost". Use the `systems`
-setting to indicate the systems or architectures that we able to build for, `maxJobs` to
-unsurprisingly set the maximum number of build processes.
+setting to indicate the systems or architectures that we able to build for, `maxJobs` to set the
+maximum number of build processes.
 
 Finally you declare the "Features" that this build machine supports. If a derivation is submitted
 that requires features that are not supported on a given build machine then it will not be built.
@@ -281,6 +310,7 @@ that requires features that are not supported on a given build machine then it w
         ];
       };
     }
+    # This is the end of the nix file for the hydra instance
 
 Place all of that configuration in a file called `simple_hydra.nix` and we're ready to start powering up.
 
@@ -289,6 +319,8 @@ Place all of that configuration in a file called `simple_hydra.nix` and we're re
 Now to tell `NixOps` to create and prepare our Hydra instance.
 
     $ cd <path to 'simple_hydra' nix files>
+    $ ls
+    simple_hydra.nix simple_hydra_vbox.nix
 
 ##### Create the virtual machine within NixOps
 
@@ -298,7 +330,7 @@ Before you can initiate the deployment of your machine, you need to make `NixOps
     created deployment ‘5537e9ba-cabf-11e8-80d0-d481d7517abf’ ### This hash will differ for your machine
     5537e9ba-cabf-11e8-80d0-d481d7517abf
 
-If that completes without error, you should the be able to issue the following command to `NixOps`:
+If that completes without error, you can then issue the following command to `NixOps`:
 
     $ nixops info -d simple_hydra
     Network name: simple_hydra
@@ -326,7 +358,14 @@ go and refresh the cup of your favourite beverage.
 
 The `--force-reboot` is required to ensure the Hydra services are started correctly. If you do not
 include it then the deployment will report an error, but will have actually completed successfully.
-However you would still need to restart the machine in order to continue.
+However you would still need to restart the machine in order to continue. The `-d` flag that we give
+to `nixops` is to specify the name of the deployment we want to use. If you don't provide this
+information then `nixops` will return this error:
+
+    error: state file contains multiple deployments, so you should specify which one to use using ‘-d’, or set the environment variable NIXOPS_DEPLOYMENT
+
+You can set the environment variable `NIXOPS_DEPLOYMENT` to `simple_hydra` if you don't want to
+include the `-d simple_hydra` information every time.
 
     $ nixops deploy -d simple_hydra --force-reboot
 
@@ -351,7 +390,7 @@ Once the machine is deployed, you can check its status using `$ nixops info -d s
     | my-hydra | Up / Up-to-date | virtualbox | nixops-c58245b3-cac2-11e8-9346-d481d7517abf-my-hydra | 192.168.56.101 |
     +----------|-----------------|------------|------------------------------------------------------|----------------+
 
-This deployment is aware of the two nix expressions that were used to create it, if those files
+This deployment depends on the two nix expressions that were used to create it, if those files
 disappear then you not be able to destroy or update the machine via `NixOps`. The other side is that
 if you change those files the you only have to issue the `deploy` command again and `NixOps` will
 take care of updating the machine to the new configuration.
@@ -367,19 +406,13 @@ we don't have any user accounts!
 ### Add the Hydra admin user
 
 To add an admin user to Hydra, we use the `hydra-create-user` program that is included with Hydra.
-An example of how to create an admin user is:
+This must be run on the Hydra machine itself so we need to SSH in, or send the instruction over SSH.
 
-    $ hydra-create-user admin \
-        --full-name "Bobby Admin" \
-        --email-address "bobby@example.org" \
-        --password TOTALLYSECURE \
-        --role admin
+The `nixops ssh` command lets you do both:
 
-This program is on the Hydra machine itself so we need to SSH in, or send the instruction over SSH.
-The `nixops ssh` command lets you do both: To run the command on the machine by connecting first:
+To run the command on the machine by connecting first:
 
     $ nixops ssh -d simple_hydra my-hydra
-    creating new user `admin`
 
 This will put you on the machine at a prompt as `root` on the `my-hydra` machine on the
 `simple_hydra` deployment. You can then run the create user command.
@@ -392,3 +425,14 @@ Alternatively you can simply send the single instruction over SSH:
 Putting the command in quotes after the `nixops ssh` command will send a single instruction over
 SSH, printing any output.
 
+The command to create an admin user is:
+
+    $ hydra-create-user admin \
+        --full-name "Bobby Admin" \
+        --email-address "bobby@example.org" \
+        --password TOTALLYSECURE \
+        --role admin
+
+With successful output being something like:
+
+    creating new user `admin`
