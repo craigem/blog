@@ -442,9 +442,10 @@ and other Hydra settings. We plan to cover more information about writing your o
 jobsets in a future post.
 
 For the impatient, you can have a look at the setup we use at QFPL for some of our projects:
-- [Waargonaut](https://github.com/qfpl/waargonaut/tree/master/ci)
-- [Digit](https://github.com/qfpl/digit/tree/master/ci)
-- [SV](https://github.com/qfpl/sv/tree/master/ci)
+
+* [Waargonaut](https://github.com/qfpl/waargonaut/tree/master/ci)
+* [Digit](https://github.com/qfpl/digit/tree/master/ci)
+* [SV](https://github.com/qfpl/sv/tree/master/ci)
 
 ### One prepared earlier
 
