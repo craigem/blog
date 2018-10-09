@@ -436,3 +436,30 @@ The command to create an admin user is:
 With successful output being something like:
 
     creating new user `admin`
+
+You can now use these credentials to login to your Hydra web UI and start configuring your jobsets
+and other Hydra settings. We plan to cover more information about writing your own declarative
+jobsets in a future post.
+
+For the impatient, you can have a look at the setup we use at QFPL for some of our projects:
+- [Waargonaut](https://github.com/qfpl/waargonaut/tree/master/ci)
+- [Digit](https://github.com/qfpl/digit/tree/master/ci)
+- [SV](https://github.com/qfpl/sv/tree/master/ci)
+
+### One prepared earlier
+
+If you're looking at most of the code in this post and thinking that all it would take is some
+simple inputs and some interpolation then you wouldn't need to write the same `nix` expressions
+every time. You would be correct, and a kindly soul by the Github handle of `ElvishJerricco` has done
+just that in [`simple-hydra`](https://github.com/ElvishJerricco/simple-hydra). This repo has a
+version of what we have worked through here, but abstracted so that you need only specify some
+choices along with hostnames etc.
+
+For the sake of your own understanding, it is useful to work through it yourself first so you can
+more readily experiment and learn about the inner workings.
+
+### Going further
+
+For those looking for more advanced Hydra information, then the [Hydra Tutorial](https://github.com/peti/hydra-tutorial)
+by Github user `peti` is an excellent resource. The tutorial is also worked through as part of a
+presentation linked to from the repo: ([presentation link](https://www.youtube.com/watch?v=RXV0Y5Bn-QQ)).
