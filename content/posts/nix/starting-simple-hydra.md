@@ -5,9 +5,9 @@ authors: schalmers
 project: infra
 ---
 
-So you've started using [`Nix`](https://nixos.org/nix) for your projects. The reproducible builds
-and dependency management are predictable and declarative. For the first time in a long time the
-ground at your feet feels firm, you're no longer treading quicksand. You size up your nemesis, the
+You've started using [`Nix`](https://nixos.org/nix) for your projects. The reproducible builds and
+dependency management are predictable and declarative. For the first time in a long time the ground
+at your feet feels firm, you're no longer treading quicksand. You size up your nemesis, the
 Continuous Integration server, long has it defied your attempts to build as you do... No longer.
 
 This post is going to be a guide into setting up a small local instance of the `Nix` powered CI
@@ -24,18 +24,23 @@ and Windows.
 --- [Hydra Homepage](https://nixos.org/hydra/)
 </p></div></div>
 
-Hydra is a very powerful system, but like most powerful systems it can be difficult to know where or
-how to start. This post aims to walk you through setting up a local Hydra instance on a virtual
-machine. This will be a stand-alone Hydra instance, only a single machine without build slaves.
+Hydra is a very powerful system, and like most powerful systems it can be difficult to know where to
+start. This post aims to help by walking through the process of setting up a local Hydra instance on
+a virtual machine. This will be a stand-alone Hydra instance, only a single machine without build
+slaves.
 
 'Why did it need to have eight heads?', you ponder briefly before deciding you'd rather not know...
 
 ### Requirements
 
-This tutorial was tested on a machine running `NixOS`, it should work on any machine that has `Nix`,
-`NixPkgs`, and `NixOps`. You should be comfortable writing your own `Nix` expressions and debugging
-failures. This is still a bit of a bleeding edge part of the `Nix` ecosystem so things don't always
-go according to plan.
+This tutorial was tested on a machine running `NixOS`, which is not required, but you _will_ need:
+
+- [`Nix`](https://nixos.org/nix),
+- [`NixPkgs`](https://nixos.org/nixpkgs), 
+- and [`NixOps`](https://nixos.org/nixops). 
+
+You should be comfortable writing your own `Nix` expressions and debugging failures. This is still a
+somewhat bleeding edge part of the `Nix` ecosystem so things don't always go according to plan.
 
 You will need `nixops` installed.
 ```
@@ -56,9 +61,9 @@ We're going to create two Nix expressions:
 ### The virtual machine
 
 We're going to create the definition for our Hydra machine. This will be a 'headless' VirtualBox
-machine, with some settings to keep the overall size of the machine down and control access.
+machine, with some settings to keep the overall size of the machine down, and control access.
 
-We create a `Nix` `attrset` that contains a function that defines our machine, this function is
+We must create a `Nix` `attrset` that contains a function that defines our machine, this function is
 attached to a name that will be used as the `<HOSTNAME>` of the machine within `NixOps`. We use the
 name `my-hydra` here, and we'll need to use that name again when we write our machine configuration.
 
@@ -67,22 +72,64 @@ name `my-hydra` here, and we'll need to use that name again when we write our ma
       my-hydra =
         { config, pkgs, ... }: {
 
-`NixOps` lets you choose your deployment environment, we're going to use VirtualBox. `NixOps`
+`NixOps` lets you choose your deployment target, ours being VirtualBox. `NixOps`
 supports quite a few different environemnts. Check out the [NixOps Manual](https://nixos.org/nixops/manual/) 
-for more information about supported target environments and their respective options and requirements.
+for more information on supported target environments.
 
-    deployment.targetEnv = "virtualbox"; # for libvrtd/QEMU use "libvrtd"
+    deployment.targetEnv = "virtualbox**;
 
-Provide some settings for our VirtualBox machine. The machine will need a fair chunk of memory, as
-evaluating the `nixpkgs` tree to build the dependencies can be expensive. As with any CI system, you
-need to make sure your target has sufficient resources to actually run the required builds.
+<a class="btn btn-light" role="button" data-toggle="collapse" href="#attrsetAside" aria-expanded="false" aria-controls="attrsetAside">
+Aside: Combining `Nix` `attrset` values
+</a>
+
+<div class="collapse mb-3" id="attrsetAside"><div class="card card-body">
+Note that `deployment` was not passed in as an argument to our configuration. Because what we're
+doing is building up a set of attributes with a specific structure so that `NixOps` can roll them
+all together to work out what to do. For example:
+
+If we have some "_default_" settings in an `attrset` somewhere:
+
+    defaultAttrs = { fieldA = "generic_name";
+    , fieldB = "foo";
+    , fieldC = 3000;
+    }
+
+To override just `fieldB`, we create the following `attrset` in our expression:
+
+    myAttrs = { fieldB = "bar"; }
+
+Then when the `attrset` values are combined the original values are overridden:
+
+    # (//) is a built in Nix function to union two attrsets together
+    defaultAttrs // myAttrs
+    =
+    { fieldA = "generic_name";
+    , fieldB = "bar";
+    , fieldC = 3000;
+    }
+
+The ordering of the union matters, `myAttrs // defaultAttrs` would override the values in the other
+direction.
+
+This is action is recursive so if you specify nested properties that they are combined as part of
+this process.
+
+    ({ fieldA = 3000; fieldB = { nestedA = "foo"; }; }) // ({ fieldB.nestedA = "bar"; })
+    =
+    { fieldA = 3000; fieldB = { nestedA = "bar"; }; }
+</div></div>
+
+Next we tweak the settings for our VirtualBox machine. The machine will need a fair chunk of memory,
+as evaluating the `nixpkgs` tree to build the dependencies can be expensive. As with any CI system,
+you need to make sure your target has sufficient resources to actually run the required builds.
+
+    deployment.virtualbox.memorySize = 4096;
+    deployment.virtualbox.vcpu = 2;
 
 Our machine doesn't require a GUI so we enable `headless` mode. Note that these are `virtualbox`
 specific settings, each target will have their own collection of options, check the manual for more
 information.
 
-    deployment.virtualbox.memorySize = 4096;
-    deployment.virtualbox.vcpu = 2;
     deployment.virtualbox.headless = true;
 
 We'll also turn off the manual from appearing on the machine, this saves a bit more space. We enable
