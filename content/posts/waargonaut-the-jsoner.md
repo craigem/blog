@@ -46,7 +46,7 @@ of that extra information?
 
 For the combination of a parser and printer, there are properties that when proven to hold, provide
 immense guarantees about the accuracy and robustness of both functions. This is called the 'round
-trip' property. Which may be expressed in two ways, or directions, if you will. Each offering a
+trip' property, which may be expressed in two ways, or directions, if you will. Each offers a
 different level of assurance.
 
 #### Hide no truths (`print . parse = id`)
@@ -62,21 +62,20 @@ This means you are able to parse JSON to a `Json` structure, change a value and 
 `Json`, the only thing that will change is the value that you've updated. Nothing else. All of the
 whitespace, indentation, trailing commas etc, are _all_ preserved. 
 
-This may seem like a lot of unnecessary work if you use-case is simply a `JSON <-> DB` pipeline. But
-remember, _flexibility_ is the goal here. There are uses beyond a quick visual debugging of your
-data. 
+This may seem like a lot of unnecessary work if your use-case is simply a `JSON <-> DB` pipeline.
+But remember, _flexibility_ is the goal here. There are uses beyond a quick visual debugging of your
+data.
 
 * A system that acts as a verification pipeline will want to be absolutely confident that their
   operations will not disrupt or alter data in an unwanted or unexpected fashion.
 * A tooling developer that wants to build an analyser or command line update application won't have
   to patch over the preservation of this 'extraneous' information. 
 * A process for migrating schemas that are codified as JSON documents can rely on this package to
-  not alter anything that is not explicitly altered
-* As a library developer I won't have to try to shoe-horn it into the design after-the-fact to meet
-  any of these use-cases.
+  not alter anything unless explicitly instructed.
+* As a library developer I won't have to try to shoe-horn it into the design after-the-fact.
 
 Generally speaking, if you consider the robustness of a parser/printer that is able to satisfy this
-property. You're able to much more confidently rely on the integrity of its operations. To
+property, then you're able to much more confidently rely on the integrity of its operations. To
 reiterate, if you don't care about such information, this library won't force you to.
 
 #### Tell no lies (`parse . print = id`)
@@ -88,10 +87,11 @@ parse . print = id
 ```
 
 This property states that given _ANY_ `Json` (the main JSON data type in Waargonaut) structure, if
-we `print` and then `parse` it. It be precisely the same structure that I started with. This
+we `print` and then `parse` it. It will be precisely the same structure that we started with. This
 property is tested using the [Hedgehog](https://hackage.haskell.org/package/hedgehog) property-based
-testing library. Which generates randomised `Json` values and then applies the built in `Encode` and
-`Decode` functionality, checking the results and failing the test if this property does not hold.
+testing library. Which helps to generate randomised `Json` values and then applies the built in
+`Encode` and `Decode` functionality. Before checking the results and failing the test if this
+property does not hold.
 
 This particular property is the absolute minimum you would expect a parser/printer pair to be able
 to satisfy. It shakes out surprising bugs in both the parser and the printer as any inconsistencies
