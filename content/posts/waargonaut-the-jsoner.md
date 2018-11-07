@@ -51,8 +51,8 @@ different level of assurance.
 
 #### Hide no truths (`print . parse = id`)
 
-Firstly, and to explain why we keep provide the ability to track all of the whitespace and comma
-information, we will express the 'round-trip' property (using pseudo-code) as: 
+Firstly, and to help explain why we have the ability to track all of the whitespace and comma
+information. We will express the 'round-trip' property (using pseudo-code) as:
 
 ```
 print . parse = id
@@ -72,7 +72,8 @@ data.
   to patch over the preservation of this 'extraneous' information. 
 * A process for migrating schemas that are codified as JSON documents can rely on this package to
   not alter anything unless explicitly instructed.
-* As a library developer I won't have to try to shoe-horn it into the design after-the-fact.
+* As a library developer I won't have to try to shoe-horn such capability into the design
+  after-the-fact.
 
 Generally speaking, if you consider the robustness of a parser/printer that is able to satisfy this
 property, then you're able to much more confidently rely on the integrity of its operations. To
@@ -86,12 +87,13 @@ When flipped around we have the following property, as pseudo-code:
 parse . print = id
 ```
 
-This property states that given _ANY_ `Json` (the main JSON data type in Waargonaut) structure, if
-we `print` and then `parse` it. It will be precisely the same structure that we started with. This
-property is tested using the [Hedgehog](https://hackage.haskell.org/package/hedgehog) property-based
-testing library. Which helps to generate randomised `Json` values and then applies the built in
-`Encode` and `Decode` functionality. Before checking the results and failing the test if this
-property does not hold.
+This property states that given _ANY_ `Json` (the main JSON data type in Waargonaut) structure. If
+we `print` and then `parse` it, the result will precisely match the structure we started with.
+
+This property is tested using the [Hedgehog](https://hackage.haskell.org/package/hedgehog)
+property-based testing library. Which helps to generate randomised `Json` values and applying the
+`Encode` / `Decode` functionality. Before checking the results and failing the test if this property
+does not hold.
 
 This particular property is the absolute minimum you would expect a parser/printer pair to be able
 to satisfy. It shakes out surprising bugs in both the parser and the printer as any inconsistencies
