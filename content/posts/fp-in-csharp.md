@@ -131,18 +131,18 @@ sealed class Zero<A> : Optional<A> {
 }
 
 sealed class One<A> : Optional<A> {
-  private readonly A x;
+  private readonly A v;
+
+  private One(A v) {
+    this.v = v;
+  }
 
   public static Optional<A> value(A a) {
     return new One<A>(a);
   }
 
-  private One(A x) {
-    this.x = x;
-  }
-
   public X Optional<X>(X zero, Func<A, X> one) {
-    return one(x);
+    return one(v);
   }
 }
 ```
@@ -250,9 +250,53 @@ A list may be thought of as one of two cases:
 
 Using this definition, we can construct any list of values. For example, the list `[1,2,3]` can be described as:
 
-> "one element `1` and another list that is one element `2` and another list that is one element `3` and another list which is empty list."
+<div class="card mb-2"><div class="card-body">
+"one element `1` and another list that is one element `2` and another list that is one element `3` and another list which is empty list."</div></div>
+
+To parenthesise this statement to illustrate the grouping:
+
+<div class="card mb-2"><div class="card-body">"one element `1` and another list that is (one element `2` and another list that is (one element `3` and another list which is empty list))."</div></div>
+
+Let's write this as a church-encoded data structure.
+
+```csharp
+interface List<A> {
+  X List<X>(X empty, Func<A, X, X> oneAnd);
+}
+```
+
+We can then write the two cases as implementation.
 
 
+```csharp
+class Empty<A> : List<A> {
+  private Empty(){}
+
+  public static List<A> value {
+    get {
+      return new Empty<A>();
+    }
+  }
+
+  public X List<X>(X empty, Func<A, X, X> oneThen) {
+    return empty;
+  }
+}
+
+class OneAnd<A> : List<A> {
+  private readonly A v;
+  private readonly List<A> w;
+
+  private OneAnd(A v, List<A> w) {
+    this.v = v;
+    this.w = w;
+  }
+  
+  public X List<X>(X empty, Func<A, X, X> oneThen) {
+    return oneThen(v, w.List(empty, oneThen));
+  }
+}
+```
 
 ----
 
