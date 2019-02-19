@@ -257,6 +257,8 @@ To parenthesise this statement to illustrate the grouping:
 
 <div class="card mb-2"><div class="card-body">"one element `1` and another list that is (one element `2` and another list that is (one element `3` and another list which is empty list))."</div></div>
 
+We can see that this is a *recursively* defined data type. That is to say, in the definition of a list, it references itself. This generally implies that the implementation of the recursive case (the second one) will be recursive.
+
 Let's write this as a church-encoded data structure.
 
 ```csharp
@@ -265,7 +267,7 @@ interface List<A> {
 }
 ```
 
-We can then write the two cases as implementation.
+We can then write the two cases as implementation. Note the recursion in the implementation of `OneAnd`.
 
 
 ```csharp
