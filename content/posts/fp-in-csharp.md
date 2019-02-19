@@ -33,7 +33,7 @@ We can then write construction functions for `true` and `false` values. The func
 ```csharp
 sealed class True : Boolean {
   private True(){}
-  public static readonly True x = new True();
+  public static readonly True value = new True();
   public X Boolean<X>(X fals, X tru) {
     return tru;
   }
@@ -41,7 +41,7 @@ sealed class True : Boolean {
 
 sealed class False : Boolean {
   private False(){}
-  public static readonly False x = new False();
+  public static readonly False value = new False();
   public X Boolean<X>(X fals, X tru) {
     return fals;
   }
