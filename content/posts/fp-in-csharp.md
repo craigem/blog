@@ -99,7 +99,7 @@ In summary, we can use church-encoding to implement data types. Let's look at so
 
 ###### optional values
 
-The option data type, sometimes called maybe, has seen a lot of discussion in recent years. It can be thought of intuitively as *a list with a maximum length of 1*. In other words, it has either 0 elements or it has 1 element.
+The optional data type, sometimes called maybe, has seen a lot of discussion in recent years. It can be thought of intuitively as *a list with a maximum length of 1*. In other words, it has either 0 elements or it has 1 element.
 
 In practical application, it can be thought of as a replacement for `null`. For example, instead of your methods returning `Bobble` which might be `null`, we instead return *a list of 0 or 1 `Bobble`s*.
 
@@ -314,7 +314,7 @@ Let's construct the list `[1,2,3]`.
 List<int> _123 = OneAnd<int>.value(1, OneAnd<int>.value(2, OneAnd<int>.value(3, Empty<int>.value)));
 ```
 
-Similar to the `Optional` data type, we can also write some interesting functions on the `List` data type. For example, a function that takes every `A` in a `List<A>` and converts into a `B` using a function, producing a `List<B>`.
+Similar to the `Optional` data type, we can also write some interesting functions on the `List` data type. For example, a function that takes every `A` in a `List<A>` and converts it to a `B` using a function, producing a `List<B>`.
 
 ```csharp
 static class ListExtensions {
@@ -339,7 +339,7 @@ We can write a function to append two lists together.
   } // ...
 ```
 
-Or, a function that appends two lists, for a function applied to each element in a list. This can be approximately thought of as a for-loop that builds up a new list inside the body of the list.
+Or, a function that appends two lists, for a function applied to each element in a list. This can be approximately thought of as a for-loop that builds up a new list inside the body of the loop.
 
 ```csharp
   public static List<B> SelectMany<A, B>(this List<A> x, Func<A, List<B>> fn) {
@@ -347,7 +347,7 @@ Or, a function that appends two lists, for a function applied to each element in
   } // ...
 ```
 
-This function can be thought of intuitively as, take every element in a list (of type `A`), apply a function that produces a new list (of type `List<B>`), then append all those lists together.
+Another way to think of this function can be, take every element in a list (of type `A`), apply a function that produces a new list (of type `List<B>`), then append all those lists together.
 
 We can use this function to implement a URL encoder. That is, given a list of characters, if any of those characters need special encoding (e.g. space), we produce a new list of characters for that encoding.
 
@@ -441,11 +441,11 @@ public static Func<Q, B> SelectMany<Q, A, B>(this Func<Q, A> x, Func<A, Func<Q, 
 
 Yep! And again, this type always leads to this implementation.
 
-There are many other candidates that fit this pattern. Millions actually. This pattern has a canonical name.
+There are many other candidates that fit this pattern of implementing `Select` and `SelectMany`. Millions actually. This pattern has a canonical name.
 
 Things that can implement `Select` are called *covariant functors*. The implementation must satisfy a couple of additional constraints to be called this, and our implementations do satisfy it.
 
-Things that can implement `SelectMany` are called *monads*, again with a couple of additional constraints which have been satisfied.
+Things that can implement noth `Select` and `SelectMany` are called *monads*, again with a couple of additional constraints which have been satisfied.
 
 What can we do with them?
 
@@ -455,7 +455,7 @@ What can we do with them?
 
 There are many components to [LINQ](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/). We will focus on query operations; specifically those that utilise `Select` and `SelectMany`.
 
-Suppose we have two values. Each value is "0 or 1 integers" or each value has the type `Optional<int>`. We got them from some other function calls, such as querying a database for the primary key of a record (if that record exists) or from a JSON object given a key (if that key exists). Given these two values, we want to multiply the two integers *if they are there*. If not, return `0`.
+Suppose we have two values. Each value is "0 or 1 integers" or in other words, each value has the type `Optional<int>`. We got them from some other function calls, such as querying a database for the primary key of a record (if that record exists) or from a JSON object given a key (if that key exists). Given these two values, we want to multiply the two integers *if they are there*. If not, return no `int` values.
 
 Typically, using `null`, the code pattern would look something like this:
 
@@ -531,7 +531,7 @@ public static Optional<int> multiply4Linq(Optional<int> v, Optional<int> w, Opti
 }
 ```
 
-This general pattern is called a *monad comprehension*. Why is this?
+This general pattern is called a *monad comprehension*. Why is this? It operates on anything with `Select` and `SelectMany`, or in other words, *any monad*.
 
 Suppose we had two lists of integers. For each element in one list, we wish to multiply it with every element in the other list. In other words, we want to calculate the *cartesian product*.
 
@@ -563,7 +563,7 @@ public static List<int> multiply(List<int> x, List<int> y) {
 }
 ```
 
-Did you notice that we repeated the earlier code in `multiply` for `Optional`? The only change was that `Optional` turned into `List`.
+Did you notice that we repeated the earlier code in `multiply` for `Optional`? The only change was that `Optional` turned into `List`. We'll look at that in a moment.
 
 Have you ever passed in the same argument to two different functions, both of which return `int`, then multiplied the result? The code would look like similar to this, perhaps with some variation. However, the general pattern is, "passing in the same value to two different functions, then combining their results using another function (such as multiplication)."
 
@@ -629,19 +629,20 @@ Again, the `q` value earlier is implicitly threaded through our four functions. 
 
 However, what about all that code repetition?
 
-So far, we have demonstrated multiplying through three very seemingly unrelated contexts:
+So far, we have demonstrated multiplying through three seemingly unrelated contexts:
 
 * `Optional` a container of 0 or 1 elements
 * `List` a container of 0 or many elements
 * `Func<Q, _>` a function that reads a value of type `Q` to compute its result
 
-This is possible because they each implement their own `SelectMany` and `Select` functions. What about other contexts? There are many (many) more. For example:
+This is possible because they each implement their own `SelectMany` and `Select` functions. What about other contexts? There are many more that we have not talked about. For example:
 
 * continuations
 * state threading
 * I/O operations
+* *millions more*
 
-And then also the combination of two or more of each of these, also can implement `SelectMany` and `Select`. What if we need to multiply for all of these? What about addition instead? Or perhaps, just any combining operation?
+And then, the combination of any two or more of each of these, can also implement `SelectMany` and `Select`. What if we need to multiply for all of these? What about addition instead? Or perhaps, just any combining operation?
 
 Unfortunately, the C# type system does not give us this ability. We'd need to write an interface to represent, "all things that have `SelectMany` and `Select`" but we'd also need to make "a generic that takes one more generic." We cannot do this for C#. The consequence is that, yes, we must repeat this code for each specific case. Alternatively, we can *turn the type system off* by using [`dynamic`](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/using-type-dynamic). Neither of these options are particularly desirable. We have hit the limits of expression of C# in this area.
 
