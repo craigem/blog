@@ -629,7 +629,7 @@ Again, the `q` value earlier is implicitly threaded through our four functions. 
 
 However, what about all that code repetition?
 
-So far, we have demonstrated multiplying through three very disparate contexts:
+So far, we have demonstrated multiplying through three very seemingly unrelated contexts:
 
 * `Optional` a container of 0 or 1 elements
 * `List` a container of 0 or many elements
