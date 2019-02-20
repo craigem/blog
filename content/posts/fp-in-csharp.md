@@ -154,7 +154,6 @@ static class OptionalExtensions {
   public static Optional<B> Select<A, B>(this Optional<A> x, Func<A, B> fn) {
     return x.Optional(Zero<B>.value, a => One<B>.value(fn(a)));
   } // ...
-}
 ```
 
 This function is relevant to [LINQ](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/basic-linq-query-operations#selecting-projections), which we will talk about later.
@@ -267,7 +266,7 @@ interface List<A> {
 }
 ```
 
-We can then write the two cases as implementation. Note the recursion in the implementation of `OneAnd`.
+We can then write the two cases as implementation. Note the recursion in the implementation of `OneAnd#List`.
 
 
 ```csharp
@@ -294,11 +293,168 @@ class OneAnd<A> : List<A> {
     this.w = w;
   }
   
+  public static List<A> value(A v, List<A> w) {
+    return new OneAnd<A>(v, w);
+  }
+
   public X List<X>(X empty, Func<A, X, X> oneThen) {
     return oneThen(v, w.List(empty, oneThen));
   }
 }
 ```
+
+We can construct a list by one of two ways.
+
+* calling `Empty#value` with no arguments
+* calling `OneAnd#value` requiring arguments of one element and another list
+
+Let's construct the list `[1,2,3]`.
+
+```csharp
+List<int> _123 = OneAnd<int>.value(1, OneAnd<int>.value(2, OneAnd<int>.value(3, Empty<int>.value)));
+```
+
+Similar to the `Optional` data type, we can also write some interesting functions on the `List` data type. For example, a function that takes every `A` in a `List<A>` and converts into a `B` using a function, producing a `List<B>`.
+
+```csharp
+static class ListExtensions {
+  public static List<B> Select<A, B>(this List<A> x, Func<A, B> fn) {
+    return x.List<List<B>>(Empty<B>.value, (a, b) => OneAnd<B>.value(fn(a), b));
+  } // ...
+```
+
+Let's write a function to make a list with one element.
+
+```csharp
+  public static List<A> SingleList<A>(this A a) {
+    return OneAnd<A>.value(a, Empty<A>.value);
+  } // ...
+```
+
+We can write a function to append two lists together.
+
+```csharp
+  public static List<A> Append<A>(this List<A> x, List<A> y) {
+    return x.List<List<A>>(y, OneAnd<A>.value);
+  } // ...
+```
+
+Or, a function that appends two lists, for a function applied to each element in a list. This can be approximately thought of as a for-loop that builds up a new list inside the body of the list.
+
+```csharp
+  public static List<B> SelectMany<A, B>(this List<A> x, Func<A, List<B>> fn) {
+    return x.List<List<B>>(Empty<B>.value, (a, b) => fn(a).Append(b));
+  } // ...
+```
+
+This function can be thought of intuitively as, take every element in a list (of type `A`), apply a function that produces a new list (of type `List<B>`), then append all those lists together.
+
+We can use this function to implement a URL encoder. That is, given a list of characters, if any of those characters need special encoding (e.g. space), we produce a new list of characters for that encoding.
+
+```csharp
+  public static List<char> f(List<char> url) {
+    return url.SelectMany(c =>
+      c == ' ' ?
+        OneAnd<char>.value('%', OneAnd<char>.value('2', OneAnd<char>.value('0', Empty<char>.value))) :
+      c == '<' ?
+        OneAnd<char>.value('%', OneAnd<char>.value('2', OneAnd<char>.value('2', Empty<char>.value))) :
+      // etc etc
+      c.SingleList()
+    );
+  }
+}
+```
+
+----
+
+#### Summary
+
+Let's summarise.
+
+We have looked at church-encoding for data structures. We first encoded a `Boolean` data type. Next, we created the `Optional` data type, which may be thought of as a list with a maximum length of 1. We then encoded a list.
+
+We implemented some interesting functions for these data types, then visited a use-case for `List#SelectMany` by implementing a URL encoder.
+
+There are some emerging patterns here. In particular, the `Optional#Select` and `List#Select` functions are the same in type signature, but for the data type name itself. This can also be said about `Optional#SelectMany` and `List#SelectMany`. If we have a look in the base libraries, we will see others, such as `IEnumerable` and `IQueryable`. What other things fit this pattern?
+
+----
+
+#### `Select` and `SelectMany`
+
+Let's look at another one. But first, let's more concretely define that pattern.
+
+The `Select` function is defined on some data type name `T` such that it implements a function with the type:
+
+```csharp
+T<B> Select<A, B>(T<A>, Func<A, B>)
+```
+
+The `SelectMany` function is defined on some data type name `T` such that it implements a function with the type:
+
+```csharp
+T<B> Select<A, B>(T<A>, Func<A, T<B>>)
+```
+
+We take particular note of the fact that "things that can be `T`" are things that have exactly one generic argument. For example, `Optional` and `List`. We could not use say `int` which has no generic arguments. It would not make sense to use `int` because there is no sensible thing that is `int<A>`.
+
+If we try to use things that have *two* generic arguments, these also do not fit. However, if we *apply one generic* to it, then that means we have a thing that takes one more generic.
+
+For example, we have used `Func` which takes two generic arguments. If we give it one generic argument, we might be able to implement `Select` and `SelectMany`. Let us make this argument itself generic. We will call it `Q`.
+
+Therefore, the type for `Select` will be:
+
+```csharp
+Func<Q, B> Select<Q, A, B>(Func<Q, A>, Func<A, B>)
+```
+
+Let's try writing this function.
+
+```csharp
+public static Func<Q, B> Select<Q, A, B>(Func<Q, A> x, Func<A, B> fn) {
+  return q => fn(x(q));
+}
+```
+
+Yes, we were able to achieve an implementation! Even more interesting, it is *the only possible* implementation for this type. That is to say, given this type, the implementation must do the thing that we have just written. This has some caveats; where we have ignored `null`, recursing forever, the `default` keyword and a few other nuances. The type signature led us to the implementation in this case.
+
+What about `SelectMany`?
+
+The structure of `SelectMany` is:
+
+```csharp
+T<B> Select<A, B>(T<A>, Func<A, T<B>>)
+```
+
+Therefore, our implementation will have this type:
+
+```csharp
+Func<Q, B> Select<Q, A, B>(Func<Q, A>, Func<A, Func<Q, B>>)
+```
+
+Can we write it?
+
+```csharp
+public static Func<Q, B> Select<Q, A, B>(Func<Q, A> x, Func<A, Func<Q, B>> fn) {
+  return q => fn(x(q))(q);
+}
+```
+
+Yep! And again, this type always leads to this implementation.
+
+There are many other candidates that fit this pattern. Millions actually. This pattern has a canonical name.
+
+Things that can implement `Select` are called *covariant functors*. The implementation must satisfy a couple of additional constraints to be called this, and our implementations do satisfy it.
+
+Things that can implement `SelectMany` are called *monads*, again with a couple of additional constraints which have been satisfied.
+
+What can we do with them?
+
+----
+
+#### LINQ
+
+There are many components to [LINQ](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/). We will focus on query operations; specifically those that utilise `Select` and `SelectMany`.
+
 
 ----
 
