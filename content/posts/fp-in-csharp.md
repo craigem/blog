@@ -410,7 +410,7 @@ Func<Q, B> Select<Q, A, B>(Func<Q, A>, Func<A, B>)
 Let's try writing this function.
 
 ```csharp
-public static Func<Q, B> Select<Q, A, B>(Func<Q, A> x, Func<A, B> fn) {
+public static Func<Q, B> Select<Q, A, B>(this Func<Q, A> x, Func<A, B> fn) {
   return q => fn(x(q));
 }
 ```
@@ -428,13 +428,13 @@ T<B> Select<A, B>(T<A>, Func<A, T<B>>)
 Therefore, our implementation will have this type:
 
 ```csharp
-Func<Q, B> Select<Q, A, B>(Func<Q, A>, Func<A, Func<Q, B>>)
+Func<Q, B> SelectMany<Q, A, B>(Func<Q, A>, Func<A, Func<Q, B>>)
 ```
 
 Can we write it?
 
 ```csharp
-public static Func<Q, B> Select<Q, A, B>(Func<Q, A> x, Func<A, Func<Q, B>> fn) {
+public static Func<Q, B> SelectMany<Q, A, B>(this Func<Q, A> x, Func<A, Func<Q, B>> fn) {
   return q => fn(x(q))(q);
 }
 ```
@@ -455,23 +455,196 @@ What can we do with them?
 
 There are many components to [LINQ](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/linq/). We will focus on query operations; specifically those that utilise `Select` and `SelectMany`.
 
+Suppose we have two values. Each value is "0 or 1 integers" or each value has the type `Optional<int>`. We got them from some other function calls, such as querying a database for the primary key of a record (if that record exists) or from a JSON object given a key (if that key exists). Given these two values, we want to multiply the two integers *if they are there*. If not, return `0`.
 
-----
+Typically, using `null`, the code pattern would look something like this:
 
-notes
+```csharp
+multiply() {
+  var x = getX();
+  var y = getY();
 
-C#
+  if(x == null)
+    return null;
+  else if(y == null)
+    return null;
+  else
+    return x * y;
+}
+```
 
-* church-encoded list
-* Optional
-* LINQ
-  * traverse
-  * liftA2
-  * url-encoder
-  * reader
-* null-conditional/propagation operator ?. (Optional#fmap)
-* null-coalescing operator ?? (fromOption)
-* using both null-conditional and coalescing ~ SelectMany
-* lens/store/tuples
+Although, we note that `int` is not actually assignable to `null`, but this is one general pattern.
 
-* *insert usages, with commentary throughout*
+However, we have two values of the type `Optional<int>` and they cannot be multipled directly. We can use `SelectMany` and `Select` to do so.
+
+```csharp
+public static Optional<int> multiply(Optional<int> x, Optional<int> y) {
+  return
+    x.SelectMany(xx =>
+    y.Select(yy =>
+    xx * yy));
+}
+```
+
+C# includes syntax for doing this if we prefer.
+
+```csharp
+public static Optional<int> multiplyLinq(Optional<int> x, Optional<int> y) {
+  return
+    from xx in x
+    from yy in y
+    select xx * yy;
+}
+```
+
+This syntax corresponds to the use of `SelectMany` and `Select`. Actually, in order to use this syntax, we'd need to implement another function, which is redundant, as that function can be implemented in terms of `SelectMany` and `Select`.
+
+```csharp
+public static Optional<C> SelectMany<A, B, C>(this Optional<A> ps, Func<A, Optional<B>> p, Func<A, B, C> f) {
+  return SelectMany(ps, a => Select(p(a), b => f(a, b)));
+}
+```
+
+What if we had say, 4 values that were "0 or 1 integers" and we wished to multiply them? We could continue to use `SelectMany` and `Select`.
+
+```csharp
+public static Optional<int> multiply4(Optional<int> v, Optional<int> w, Optional<int> x, Optional<int> y) {
+  return
+    v.SelectMany(vv =>
+    w.SelectMany(ww =>
+    x.SelectMany(xx =>
+    y.Select(yy =>
+    vv * ww * xx * yy))));
+}
+```
+
+Or if we prefer the LINQ syntax.
+
+```csharp
+public static Optional<int> multiply4Linq(Optional<int> v, Optional<int> w, Optional<int> x, Optional<int> y) {
+  return
+    from vv in v
+    from ww in w
+    from xx in x
+    from yy in y
+    select vv * ww * xx * yy;
+}
+```
+
+This general pattern is called a *monad comprehension*. Why is this?
+
+Suppose we had two lists of integers. For each element in one list, we wish to multiply it with every element in the other list. In other words, we want to calculate the *cartesian product*.
+
+Using loops, the general pattern might be something like:
+
+```
+// pseudo-code
+List<int> multiplyLists(List<int> x, List<int> y) {
+  List<int> r = empty;
+
+  foreach(int xx in x) {
+    foreach(int yy in y) {
+      r.Add(xx * yy);
+    }
+  }
+
+  return r;
+}
+```
+
+However, we can also do this using `SelectMany` and `Select`.
+
+```csharp
+public static List<int> multiply(List<int> x, List<int> y) {
+  return
+    x.SelectMany(xx =>
+    y.Select(yy =>
+    xx * yy));
+}
+```
+
+Did you notice that we repeated the earlier code in `multiply` for `Optional`? The only change was that `Optional` turned into `List`.
+
+Have you ever passed in the same argument to two different functions, both of which return `int`, then multiplied the result? The code would look like similar to this, perhaps with some variation. However, the general pattern is, "passing in the same value to two different functions, then combining their results using another function (such as multiplication)."
+
+```csharp
+public static Func<Q, int> multiply<Q>(Func<Q, int> f, Func<Q, int> g) {
+  return
+    q =>
+      f(q) * g(q);
+}
+```
+
+We can write this using `SelectMany` and `Select`.
+
+```csharp
+public static Func<Q, int> multiply<Q>(Func<Q, int> f, Func<Q, int> g) {
+  return
+    f.SelectMany(ff =>
+    g.Select(gg =>
+    ff * gg));
+}
+```
+
+Or using LINQ syntax.
+
+```csharp
+public static Func<Q, int> multiplyLinq<Q>(Func<Q, int> f, Func<Q, int> g) {
+  return
+    from ff in f
+    from gg in g
+    select ff * gg;
+}
+```
+
+Notice with the latter two cases, the `q` argument is never named. It needn't be named explicitly. It is passed through to our two functions by the implementations of `SelectMany` and `Select`.
+
+What if we had four functions and wished to apply the same argument to them all and multiply the results?
+
+```csharp
+public static Func<Q, int> multiply4<Q>(Func<Q, int> d, Func<Q, int> e, Func<Q, int> f, Func<Q, int> g) {
+  return
+    d.SelectMany(dd =>
+    e.SelectMany(ee =>
+    f.SelectMany(ff =>
+    g.Select(gg =>
+    dd * ee * ff * gg))));
+}
+```
+
+Or with LINQ syntax.
+
+```csharp
+public static Func<Q, int> multiply4Linq<Q>(Func<Q, int> d, Func<Q, int> e, Func<Q, int> f, Func<Q, int> g) {
+  return
+    from dd in d
+    from ee in e
+    from ff in f
+    from gg in g
+    select dd * ee * ff * gg;
+}
+```
+
+Again, the `q` value earlier is implicitly threaded through our four functions. We needn't ever explicitly declare it and pass it through ourselves. This is quite a handy pattern if you find yourself explicitly passing through a value to functions in your program calls to eventually get used. For example, the "program configuration object" may be passed around, and various functions use it where necessary, or pass it on through to more functions. We can instead use `SelectMany` and `Select`, or a LINQ query expression.
+
+However, what about all that code repetition?
+
+So far, we have demonstrated multiplying through three very disparate contexts:
+
+* `Optional` a container of 0 or 1 elements
+* `List` a container of 0 or many elements
+* `Func<Q, _>` a function that reads a value of type `Q` to compute its result
+
+This is possible because they each implement their own `SelectMany` and `Select` functions. What about other contexts? There are many (many) more. For example:
+
+* continuations
+* state threading
+* I/O operations
+
+And then also the combination of two or more of each of these, also can implement `SelectMany` and `Select`. What if we need to multiply for all of these? What about addition instead? Or perhaps, just any combining operation?
+
+Unfortunately, the C# type system does not give us this ability. We'd need to write an interface to represent, "all things that have `SelectMany` and `Select`" but we'd also need to make "a generic that takes one more generic." We cannot do this for C#. The consequence is that, yes, we must repeat this code for each specific case. Alternatively, we can *turn the type system off* by using [`dynamic`](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/using-type-dynamic). Neither of these options are particularly desirable. We have hit the limits of expression of C# in this area.
+
+Nevertheless, we have new tools with which to think about and perhaps design and implement our C# programs. We may use a church-encoding where appropriate, but this has some gotchyas as well. Fortunately, these can be worked around. There are also other interesting tools, data structures and concepts that we can learn about in designing our programs.
+
+That's an article for another day.
