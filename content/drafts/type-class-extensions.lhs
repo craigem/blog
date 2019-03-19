@@ -49,11 +49,15 @@ the following form.
 ```haskell
 class cx => C u where cdecls
 ```
-It may have a context (`cx => `), must have a class name `C`, and must have exactly one type
-variable `u` that denotes the type of the instance. Following this is an optional list of
-declarations (`cdecls`) specifying any members of the class.
 
-Some concrete examples are the `Eq` and `Ord` classes.
+Looking at each part, type class declarations:
+
+ - _may_ have a context (`cx => `);
+ - _must_ have a class name (`C`);
+ - _must_ be parameterised over exactly one type (`u`); and
+ - _may_ declare one or more members (`where cdecls`).
+
+Some examples are:
 
 ```haskell
 class Eq a => Ord a where
@@ -66,6 +70,11 @@ class Show a where
 
 class (Ord a, Show a) => ShOrd a
 ```
+
+`Ord` and `Show` are two common type classes. `ShOrd` is one I made up, and may look a little weird
+given it doesn't declare any members. Its purpose is to group `Ord` and `Show` constraints into one
+class. This can avoid some boilerplate if you find yourself listing many constraints again and
+again.
 
 <h3>Type class instances in Haskell 2010</h3>
 
