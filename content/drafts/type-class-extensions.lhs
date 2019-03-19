@@ -4,6 +4,16 @@ date: 2019-03-19
 authors: ajmcmiddlin
 ---
 
+In this post I'm going to look at a few GHC language extensions related to Haskell's type class
+mechanism, including what they do, and what their risks are, if any. This post is a literate
+Haskell file and is available in the
+[QFPL blog repo](https://github.com/qfpl/blog/blob/master/content/posts/type-class-extensions.lhs).
+If you want to check your understanding of the material, I encourage you to load it up in GHCi and
+play with it. In particular, enabling and disabling different language extensions can be helpful to
+get a clear picture of what each extension allows.
+
+Here are the extensions we're going to cover.
+
 \begin{code}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -22,15 +32,13 @@ type-class-extensions.lhs:3:3: error:
 ```
 
 We've written some code involving a type class `Foo`, and GHC is telling us that it's invalid unless
-we enable an extension. In this case, `MultiParamTypeClasses`.
+we enable an extension. In this case, `MultiParamTypeClasses`. Keep your hand up if you've done
+what GHC says without being 100% sure what the extension is actually doing? Yeah, thought so.
 
-Keep your hand up if you've done what GHC says without being 100% sure what the extension is
-actually doing? Yeah, thought so.
-
-In this post I'm going to look at a few GHC language extensions related to Haskell's type class
-mechanism, including what they do, and what their risks are, if any. Before we dig into extensions
-of the type class system though, let's look at what a type class is according to the Haskell 2010
-standard.
+The more I've learned about Haskell and GHC's extensions, the less comfortable I am with this
+situation. Let's see if we can get a better understanding of some extensions related to type
+classes. Before we dig into the extensions, let's look at what a type class is according to the
+Haskell 2010 standard.
 
 <h3>Type classes in Haskell 2010</h3>
 
