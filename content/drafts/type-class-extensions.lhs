@@ -6,7 +6,7 @@ authors: ajmcmiddlin
 
 \begin{code}
 {-# LANGUAGE MultiParamTypeClasses #-}
--- {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 \end{code}
 
 Hands up if you've ever seen a compiler error like this:
@@ -132,8 +132,19 @@ Likewise, if we wanted to write an instance for a type whose constructor is appl
 concrete types, we need `FlexibleInstances` enabled.
 
 \begin{code}
+class Show' a where
+  show' :: a -> String
 
+instance Show' Integer where
+  show' = show
+
+instance Show' (Maybe Integer) where
+  show' Nothing = "Nothing"
+  show' (Just n) = "Just " ++ show' n
 \end{code}
+
+The `Show'` instance for `Maybe Integer` isn't valid in Haskell 2010, as `Maybe` is applied to the
+concrete type `Integer` and not a simple type variable.
 
 
 <h3>`FunctionalDependencies`</h3>
