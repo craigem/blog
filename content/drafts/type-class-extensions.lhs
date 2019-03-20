@@ -111,9 +111,9 @@ That's it, that's all there is to `MultiParamTypeClasses`.
 
 <h3>`FlexibleInstances`</h3>
 
-**TL;DR**: `FlexibleInstances` relaxes rules about what is a valid instance head. For example, with
-`FlexibleInstances` turned on an instance may include a type variable more than once, or use
-concrete types in place of variables.
+**TL;DR**: `FlexibleInstances` relaxes rules about what is a valid instance declaration. For
+example, with `FlexibleInstances` turned on an instance may include a type variable more than once,
+or use concrete types in place of variables.
 
 Now we've got a type class over multiple parameters, let's take it for a spin!
 
@@ -163,10 +163,89 @@ instance Show' (Maybe Integer) where
 The `Show'` instance for `Maybe Integer` isn't valid in Haskell 2010, as `Maybe` is applied to the
 concrete type `Integer` and not a simple type variable.
 
+<h4>`FlexibleInstances`' dark side</h4>
 
-<h3>`FunctionalDependencies`</h3>
+I've seen a few places on the internet mention that `FlexibleInstances` is a benign extension that
+comes without risk. It turns out that's not exactly true. Here's an example that produces a
+`Data.Set` containing duplicate values, and gives no warnings when compiled with `-Wall` enabled.
+As we'll see, this code uses no other extensions, and nothing outside of `base`.
 
 
+```haskell
+-- FIA.hs
+module FIA where
 
+data A = A1 | A2 deriving (Eq, Ord, Show)
 
+data Whoopsie a b c =
+  Whoopsie a b c
+  deriving (Eq, Show)
 
+-- FIB.hs
+{-# LANGUAGE FlexibleInstances #-}
+
+module FIB where
+
+import Data.Set (Set, insert)
+import FIA
+
+data B = B deriving (Eq, Ord, Show)
+
+instance Ord c => Ord (Whoopsie A B c) where
+  compare (Whoopsie a1 b1 c1) (Whoopsie a2 b2 c2) =
+    compare a1 a2 <> compare b1 b2 <> compare c1 c2
+
+insB :: Ord c => Whoopsie A B c -> Set (Whoopsie A B c) -> Set (Whoopsie A B c)
+insB = insert
+
+-- FIC.hs
+{-# LANGUAGE FlexibleInstances #-}
+
+module FIC where
+
+import Data.Set (Set, insert)
+import FIA
+
+data C = C deriving (Eq, Ord, Show)
+
+instance Ord b => Ord (Whoopsie A b C) where
+  compare (Whoopsie a1 b1 c1) (Whoopsie a2 b2 c2) =
+    compare a2 a1 <> compare b1 b2 <> compare c1 c2
+
+insC :: Ord b => Whoopsie A b C -> Set (Whoopsie A b C) -> Set (Whoopsie A b C)
+insC = insert
+
+-- Main.hs
+module Main where
+
+import Data.Set (Set, empty)
+
+import FIA
+import FIB
+import FIC
+
+test :: Set (Whoopsie A B C)
+test =
+  insB (Whoopsie A1 B C) . insC (Whoopsie A1 B C) . insC (Whoopsie A2 B C) $ empty
+
+main :: IO ()
+main =
+  print test
+```
+
+Here's what happens when we compile and run this code.
+
+```
+ghc --version
+The Glorious Glasgow Haskell Compilation System, version 8.4.4
+
+`> ghc -Wall -fforce-recomp Main.hs -o whoopsie
+[1 of 4] Compiling FIA              ( FIA.hs, FIA.o )
+[2 of 4] Compiling FIB              ( FIB.hs, FIB.o )
+[3 of 4] Compiling FIC              ( FIC.hs, FIC.o )
+[4 of 4] Compiling Main             ( Main.hs, Main.o )
+Linking whoopsie ...
+
+`> ./whoopsie
+fromList [Whoopsie A1 B C,Whoopsie A2 B C,Whoopsie A1 B C]``
+```
