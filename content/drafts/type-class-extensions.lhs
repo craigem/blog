@@ -17,6 +17,7 @@ Here are the extensions we're going to cover.
 \begin{code}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
 \end{code}
 
 Hands up if you've ever seen a compiler error like this:
@@ -96,18 +97,20 @@ Furthermore, `T` must be a type constructor and each type variable `u1 … uk` m
 
 <h3>`MultiParamTypeClasses`</h3>
 
-Suppose we want to write a type class that is parameterised over two variables.
+Suppose we want to write a type class that is parameterised over two variables. In this case, we're
+going to look at `MonadReader` from the `mtl` package. For those not familiar, `MonadReader` allows
+us to express a polymorphic type for monads that work like the `Reader` monad. That is, they contain
+some environment that is always available without explicitly passing it around as a function
+argument.
 
 \begin{code}
-class Has s a where
-  get :: s -> a
+class Monad m => MonadReader' r m where
+  ask' :: m r
 \end{code}
 
 This isn't valid Haskell 2010, because the type class `MonadReader` is parameterised over two type
 variables --- `r` and `m`. As the name suggests, the `MultiParamTypeClasses` extension allows us to
 write this class.
-
-That's it, that's all there is to `MultiParamTypeClasses`.
 
 <h3>`FlexibleInstances`</h3>
 
@@ -118,50 +121,49 @@ or use concrete types in place of variables.
 Now we've got a type class over multiple parameters, let's take it for a spin!
 
 \begin{code}
-instance Has (a,b) a where
-  get = fst
-
-instance Has (a,b) b where
-  get = snd
+instance MonadReader' r ((->) r) where
+  ask' = id
 \end{code}
 
-Oh no! We have some errors. It turns out we have the same error twice, so I'll only show you the
-first one.
+Oh no! We have an error.
 
 ```
-type-class-extensions.lhs:81:10: error:
-    • Illegal instance declaration for ‘Has (a, b) a’
+type-class-extensions.lhs:123:10-32: error:
+    • Illegal instance declaration for ‘MonadReader' r ((->) r)’
         (All instance types must be of the form (T a1 ... an)
          where a1 ... an are *distinct type variables*,
          and each type variable appears at most once in the instance head.
          Use FlexibleInstances if you want to disable this.)
-    • In the instance declaration for ‘Has (a, b) a’
-   |
-81 | instance Has (a,b) a where
-   |          ^^^^^^^^^^^
+    • In the instance declaration for ‘MonadReader' r ((->) r)’
+    |
+123 | instance MonadReader' r ((->) r) where
 ```
 
 Remember when we looked at what Haskell 2010 says is a valid type class instance, and it specified
-that each type variable in the instance head had to be a unique type variable. We've broken that
-rule here. `FlexibleInstances` lifts this restriction, and allows us to write such instances.
+that each type variable in the instance head could appear at most once. We've broken that rule here
+because `r` appears multiple times. We've also broken the rule that says each type in an instance
+head must be of the form `T a1 ... an`, where `T` is a type constructor and not a type variable. The
+first type in the instance head, `r`, is a type variable and not a concrete type constructor as
+required by Haskell 2010. `FlexibleInstances` lifts these restrictions, and allows us to write such
+instances.
 
 Likewise, if we wanted to write an instance for a type whose constructor is applied to one or more
 concrete types, we need `FlexibleInstances` enabled.
 
 \begin{code}
-class Show' a where
-  show' :: a -> String
+class Twizzle a where
+  twizzle :: a -> Int
 
-instance Show' Integer where
-  show' = show
+instance Twizzle Integer where
+  twizzle = fromInteger
 
-instance Show' (Maybe Integer) where
-  show' Nothing = "Nothing"
-  show' (Just n) = "Just " ++ show' n
+instance Twizzle (Maybe Integer) where
+  twizzle = maybe 42 twizzle
 \end{code}
 
-The `Show'` instance for `Maybe Integer` isn't valid in Haskell 2010, as `Maybe` is applied to the
-concrete type `Integer` and not a simple type variable.
+The `Twizzle` instance for `Maybe Integer` isn't valid in Haskell 2010, as `Maybe` is applied to the
+concrete type `Integer` and not a simple type variable. Again, `FlexibleInstances` relaxes this
+constraint and allows these instances.
 
 <h4>`FlexibleInstances`' dark side</h4>
 
@@ -169,6 +171,10 @@ I've seen a few places on the internet mention that `FlexibleInstances` is a ben
 comes without risk. It turns out that's not exactly true. Here's an example that produces a
 `Data.Set` containing duplicate values, and gives no warnings when compiled with `-Wall` enabled.
 As we'll see, this code uses no other extensions, and nothing outside of `base`.
+
+It's worth noting that sets containing duplicate instances can be created _without_ enabling
+`FlexibleInstances`, however it requires orphan instances, which will produce a warning and are
+considered bad practice by many.
 
 
 ```haskell
@@ -180,7 +186,9 @@ data A = A1 | A2 deriving (Eq, Ord, Show)
 data Whoopsie a b c =
   Whoopsie a b c
   deriving (Eq, Show)
+```
 
+```haskell
 -- FIB.hs
 {-# LANGUAGE FlexibleInstances #-}
 
@@ -197,7 +205,9 @@ instance Ord c => Ord (Whoopsie A B c) where
 
 insB :: Ord c => Whoopsie A B c -> Set (Whoopsie A B c) -> Set (Whoopsie A B c)
 insB = insert
+```
 
+```haskell
 -- FIC.hs
 {-# LANGUAGE FlexibleInstances #-}
 
@@ -214,7 +224,9 @@ instance Ord b => Ord (Whoopsie A b C) where
 
 insC :: Ord b => Whoopsie A b C -> Set (Whoopsie A b C) -> Set (Whoopsie A b C)
 insC = insert
+```
 
+```haskell
 -- Main.hs
 module Main where
 
@@ -249,3 +261,56 @@ Linking whoopsie ...
 `> ./whoopsie
 fromList [Whoopsie A1 B C,Whoopsie A2 B C,Whoopsie A1 B C]``
 ```
+
+<h4>`FunctionalDependencies`</h4>
+
+We've now got a type class with multiple parameters thanks to `MultiParamTypeClasses`, and an
+instance of that class that has the same type variable multiple times in the instance head thanks to
+`FlexibleInstances`. Let's get to using our instance.
+
+\begin{code}
+foo' ::
+  Integer
+foo' =
+  (+ 1) <$> ask' $ 100
+\end{code}
+
+What's this? Another error?
+
+```
+type-class-extensions.lhs:275:13-16: error:
+    • Ambiguous type variable ‘t0’ arising from a use of ‘ask'’
+      prevents the constraint ‘(MonadReader'
+                                  Integer ((->) t0))’ from being solved.
+      Probable fix: use a type annotation to specify what ‘t0’ should be.
+      These potential instance exist:
+        one instance involving out-of-scope types
+        (use -fprint-potential-instances to see them all)
+    • In the second argument of ‘(<$>)’, namely ‘ask'’
+      In the expression: (+ 1) <$> ask'
+      In the expression: (+ 1) <$> ask' $ 100
+    |
+275 |   (+ 1) <$> ask' $ 100
+    |             ^^^^
+type-class-extensions.lhs:275:20-22: error:
+    • Ambiguous type variable ‘t0’ arising from the literal ‘100’
+      prevents the constraint ‘(Num t0)’ from being solved.
+      Probable fix: use a type annotation to specify what ‘t0’ should be.
+      These potential instances exist:
+        instance Num Integer -- Defined in ‘GHC.Num’
+        instance Num Double -- Defined in ‘GHC.Float’
+        instance Num Float -- Defined in ‘GHC.Float’
+        ...plus two others
+        (use -fprint-potential-instances to see them all)
+    • In the second argument of ‘($)’, namely ‘100’
+      In the expression: (+ 1) <$> ask' $ 100
+      In an equation for ‘foo'’: foo' = (+ 1) <$> ask' $ 100
+    |
+275 |   (+ 1) <$> ask' $ 100
+```
+
+That's funny. `foo' :: Integer`, so shouldn't GHC's type inference know what the type of `ask'` and
+the literal `100` should be here? Let's dig in.
+
+`ask' :: MonadReader r m => m r`, and in this case `r ~ Integer` 
+
