@@ -44,8 +44,7 @@ Haskell 2010 standard.
 <h3>Type classes in Haskell 2010</h3>
 
 [Section 4.3.1 of the standard](https://www.haskell.org/onlinereport/haskell2010/haskellch4.html#x10-750004.3)
-of the standard covers type classes. To summarise, it says that a type class declaration must have
-the following form.
+covers type classes. To summarise, it says that a type class declaration must have the following form.
 
 ```haskell
 class cx => C u where cdecls
@@ -89,9 +88,10 @@ instance cx′ => C (T u1 … uk) where { d }
 
 An instance declaration:
 
-  - may have a context --- `cx' =>`;
-  - must mention the class name --- `C`;
-  - must mention the type the instance is for --- `T u1 … uk`.
+  - _may_ have a context (`cx' =>`);
+  - _must_ mention the class name (`C`);
+  - _must_ mention the type the instance is for (`T u1 … uk`); and
+  - _may_ contain definitions for the class's members (`{ d }`).
 
 Furthermore, `T` must be a type constructor and each type variable `u1 … uk` must be distinct.
 
@@ -154,11 +154,8 @@ concrete types, we need `FlexibleInstances` enabled.
 class Twizzle a where
   twizzle :: a -> Int
 
-instance Twizzle Integer where
-  twizzle = fromInteger
-
 instance Twizzle (Maybe Integer) where
-  twizzle = maybe 42 twizzle
+  twizzle = maybe 42 fromInteger
 \end{code}
 
 The `Twizzle` instance for `Maybe Integer` isn't valid in Haskell 2010, as `Maybe` is applied to the
@@ -262,18 +259,21 @@ Linking whoopsie ...
 fromList [Whoopsie A1 B C,Whoopsie A2 B C,Whoopsie A1 B C]``
 ```
 
+To be fair, this is a pathological example, and I'm yet to hear of this issue biting anyone. On the
+other hand, given enough monkeys with typewriters...
+
 <h4>`FunctionalDependencies`</h4>
 
 We've now got a type class with multiple parameters thanks to `MultiParamTypeClasses`, and an
 instance of that class that has the same type variable multiple times in the instance head thanks to
 `FlexibleInstances`. Let's get to using our instance.
 
-\begin{code}
+```haskell
 foo' ::
   Integer
 foo' =
   (+ 1) <$> ask' $ 100
-\end{code}
+```
 
 What's this? Another error?
 
@@ -309,8 +309,60 @@ type-class-extensions.lhs:275:20-22: error:
 275 |   (+ 1) <$> ask' $ 100
 ```
 
-That's funny. `foo' :: Integer`, so shouldn't GHC's type inference know what the type of `ask'` and
-the literal `100` should be here? Let's dig in.
+GHC sees that the environment has type `Integer`, and the monad instance is `(->) r`. However, it's
+unable to draw the connection between the two types. From our instance definition, it's clear to us
+that the environment and function argument have the same type, so what's GHC missing? It turns out
+that `MultiParamTypeClasses` doesn't change how the inference engine works, so it's unable to draw
+the connection that seems so obvious to us. To demonstrate, if we annotate the literal `100`, we can
+fill in the blind spot in the inference engine, as it's now given the type of `m` (in this case
+`(->) Integer`) explicitly.
 
-`ask' :: MonadReader r m => m r`, and in this case `r ~ Integer` 
+\begin{code}
+foo' ::
+  Integer
+foo' =
+  (+ 1) <$> ask' $ (100 :: Integer)
+\end{code}
 
+So have we just traded in type inference to get type classes with multiple parameters? No! The
+`FunctionalDependencies` language extension can be used to bring inference back in the presence of
+`MultiParamTypeClasses`.
+
+Let's define an updated `MonadReader'`.
+
+\begin{code}
+class MonadReader'' r m | m -> r where
+  ask'' :: m r
+\end{code}
+
+This class is very similar to `MonadReader'`, with the only difference being the addition of a
+functional dependency. That's the `| m -> r` bit, which tells GHC that the type of `r` is
+determined by the type of `m`. That is, if GHC knows what `m` is, it knows what `r` is.
+
+Armed with a functional dependency, let's see if we get inference back.
+
+\begin{code}
+instance MonadReader'' r ((->) r) where
+  ask'' = id
+
+foo'' ::
+  Integer
+foo'' =
+  (+ 1) <$> ask'' $ 100
+\end{code}
+
+Success! Now that GHC knows the type of `m` determines the type of `r`, and that for our instance
+the argument to our function has the same type as the environment, GHC is able to infer `m`.
+
+Finally, to provide a counter example, it would be an error to write these two instances, because
+the same `m` (`(->) Integer`) resolves to two different types for `r`.
+
+```haskell
+instance MonadReader'' Integer ((->) Integer) where
+  ask'' = id
+
+instance MonadReader'' Double ((->) Integer) where
+  ask'' = fromInteger
+```
+
+<h3>`FlexibleContexts`</h3>
