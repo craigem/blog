@@ -190,8 +190,28 @@ given(list, x) {
   return r
 }
 ```
+----
 
-Since the `sequence` function is overloaded, as we have seen it work on `Maybe` values, it can also work on values that are functions accepting one argument, since that meets the same pattern as `Maybe` as far as `sequence` is concerned.
+### sequence on list with list
+
+Given a list of lists, produce a list of lists, where each element of each list appears (in order), with every element of the other lists. This is also known as *the cartesian product*.
+
+```csharp
+// >>> given([[1,2], [4,5,6], [7,8]])
+// [[1,4,7],[1,4,8],[1,5,7],[1,5,8],[1,6,7],[1,6,8],[2,4,7],[2,4,8],[2,5,7],[2,5,8],[2,6,7],[2,6,8]]
+given(list) {
+  var r = List.empty;
+  for(int i = 0; i < list.length; i++) {
+    var s = List.empty
+    for(int j = 0; j < list[i].length; j++) {
+      s.add(list[i][j])
+    }
+    r.append(s)
+  }
+}
+```
+
+Since the `sequence` function is overloaded, as we have also seen it work on `Maybe` values, it can also work on values that are functions accepting one argument, since that meets the same pattern as `Maybe` as far as `sequence` is concerned.
 
 ```haskell
 sequence list x
